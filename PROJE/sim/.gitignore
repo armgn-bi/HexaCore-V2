@@ -1,0 +1,18 @@
+# sim/ dizini çıktıları — Git'e dahil etme
+xsim.dir/
+.Xil/
+xsim_work/
+logs/
+
+# Vivado çıktıları
+*.jou
+*.pb
+*.wdb
+*.vcd
+*.log
+webtalk*.jou
+webtalk*.log
+
+# Kopyalanan mem/txt dosyaları (tb/ kaynağı korunur)
+*.mem
+*.txt

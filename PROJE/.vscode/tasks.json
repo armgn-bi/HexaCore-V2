@@ -1,0 +1,171 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "XSIM: Compile (xvlog)",
+            "type": "shell",
+            "command": "powershell.exe",
+            "args": [
+                "-ExecutionPolicy", "Bypass",
+                "-File", "${workspaceFolder}\\sim\\run_sim.ps1",
+                "-Target", "compile"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}\\sim"
+            },
+            "group": "build",
+            "problemMatcher": [],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            }
+        },
+        {
+            "label": "XSIM: Elaborate (xelab)",
+            "type": "shell",
+            "command": "powershell.exe",
+            "args": [
+                "-ExecutionPolicy", "Bypass",
+                "-File", "${workspaceFolder}\\sim\\run_sim.ps1",
+                "-Target", "elaborate"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}\\sim"
+            },
+            "group": "build",
+            "problemMatcher": [],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "XSIM: Simulate (xsim)",
+            "type": "shell",
+            "command": "powershell.exe",
+            "args": [
+                "-ExecutionPolicy", "Bypass",
+                "-File", "${workspaceFolder}\\sim\\run_sim.ps1",
+                "-Target", "sim"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}\\sim"
+            },
+            "group": "test",
+            "problemMatcher": [],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "XSIM: Full Flow (compile + elaborate + sim)",
+            "type": "shell",
+            "command": "powershell.exe",
+            "args": [
+                "-ExecutionPolicy", "Bypass",
+                "-File", "${workspaceFolder}\\sim\\run_sim.ps1",
+                "-Target", "all"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}\\sim"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            }
+        },
+        {
+            "label": "XSIM: Check (compile + elaborate only)",
+            "type": "shell",
+            "command": "powershell.exe",
+            "args": [
+                "-ExecutionPolicy", "Bypass",
+                "-File", "${workspaceFolder}\\sim\\run_sim.ps1",
+                "-Target", "check"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}\\sim"
+            },
+            "group": "build",
+            "problemMatcher": [],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            }
+        },
+        {
+            "label": "XSIM: Waveform GUI",
+            "type": "shell",
+            "command": "powershell.exe",
+            "args": [
+                "-ExecutionPolicy", "Bypass",
+                "-File", "${workspaceFolder}\\sim\\run_sim.ps1",
+                "-Target", "wave"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}\\sim"
+            },
+            "group": "none",
+            "problemMatcher": [],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },        {
+            "label": "XSIM: Clean",
+            "type": "shell",
+            "command": "powershell.exe",
+            "args": [
+                "-ExecutionPolicy", "Bypass",
+                "-File", "${workspaceFolder}\\sim\\run_sim.ps1",
+                "-Target", "clean"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}\\sim"
+            },
+            "group": "none",
+            "problemMatcher": [],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "XSIM: SoC Integration Test (AXI+DMEM+DSP)",
+            "type": "shell",
+            "command": "powershell.exe",
+            "args": [
+                "-ExecutionPolicy", "Bypass",
+                "-File", "${workspaceFolder}\\sim\\run_sim.ps1",
+                "-Target", "soc_test"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}\\sim"
+            },
+            "group": "test",
+            "problemMatcher": [],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            }
+        }
+    ]
+}
