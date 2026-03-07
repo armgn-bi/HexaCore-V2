@@ -29,5 +29,19 @@
 // DSP (SystemVerilog wrapper)
 ../rtl/dsp/dsp_filter_wrapper.sv
 
+// UART
+../rtl/uart/uart_fifo.sv
+../rtl/uart/uart_tx.sv
+../rtl/uart/uart_rx.sv
+../rtl/uart/axi_uart.sv
+
+// SPI
+../rtl/spi/spi_master.sv
+../rtl/spi/axi_spi.sv
+
+// I2C
+../rtl/i2c/i2c_master.sv
+../rtl/i2c/axi_i2c.sv
+
 // SoC Top
 ../rtl/top/soc_top.sv

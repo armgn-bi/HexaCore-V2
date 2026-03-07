@@ -4,7 +4,7 @@
 # Çıktı: tb/lsu.golden_clean.log.txt
 
 $ErrorActionPreference = "Stop"
-$env:PATH = "C:\Armagan\Vivado\Vivado\2024.1\bin;" + $env:PATH
+$env:PATH = "C:\AMDDesignTools\2025.2\Vivado\bin;" + $env:PATH
 
 $simDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $simDir

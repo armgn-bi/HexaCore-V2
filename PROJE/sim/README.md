@@ -11,13 +11,13 @@ Bu dizin (`sim/`), Vivado XSIM araçlarını kullanarak RISC-V SoC projesini sim
 
 ```powershell
 # Vivado yolunuzu kendi kurulumunuza göre düzenleyin:
-$env:PATH = "C:\Xilinx\Vivado\2024.1\bin;" + $env:PATH
+$env:PATH = "C:\AMDDesignTools\2025.2\Vivado\bin;" + $env:PATH
 ```
 
 ### PATH Ayarı (Bash / WSL)
 
 ```bash
-export PATH=/opt/Xilinx/Vivado/2024.1/bin:$PATH
+export PATH=/opt/Xilinx/Vivado/2025.2/bin:$PATH
 ```
 
 ## Dizin Yapısı

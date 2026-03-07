@@ -59,7 +59,7 @@ function Test-VivadoInPath {
     if (-not $xvlog) {
         Write-Host "[HATA] 'xvlog' PATH'te bulunamadi!" -ForegroundColor Red
         Write-Host "       Vivado bin dizinini PATH'e ekleyin:" -ForegroundColor Yellow
-        Write-Host '       $env:PATH = "C:\Xilinx\Vivado\2024.1\bin;" + $env:PATH' -ForegroundColor Yellow
+        Write-Host '       $env:PATH = "C:\AMDDesignTools\2025.2\Vivado\bin;" + $env:PATH' -ForegroundColor Yellow
         exit 1
     }
     Write-Host "[INFO] Vivado bulundu: $($xvlog.Source)" -ForegroundColor Green

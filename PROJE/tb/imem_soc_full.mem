@@ -1,0 +1,78 @@
+// imem_soc_full.mem — Tam SoC Entegrasyon Test Programı
+// Core → AXI → Periferal bağlantılarını doğrular.
+// İç DMEM (0x8000_xxxx) + AXI DMEM (0x8001_xxxx) + UART/SPI/I2C/DSP register erişimleri
+//
+// Beklenen sonuçlar (tüm LW'ler):
+//   x10 = 0x000000AB  (iç DMEM okuma)
+//   x11 = 0x0000005A  (AXI DMEM okuma)
+//   x12 = 0x0000000A  (UART STATUS başlangıç)
+//   x13 = 0x00000041  (SPI CTRL readback)
+//   x14 = 0x00000001  (I2C CTRL readback)
+//   x15 = 0x00000001  (DSP CTRL readback)
+//   x16 = 0x0000005A  (AXI DMEM tekrar okuma — kalıcılık)
+
+// === Faz 1: Dahili DMEM Yazma/Okuma ===
+// 0x00: lui  x5, 0x80000         ; x5 = 0x8000_0000 (iç DMEM tabanı)
+800002B7
+// 0x04: addi x6, x0, 0x0AB      ; x6 = 0xAB
+0AB00313
+// 0x08: sw   x6, 256(x5)        ; MEM[0x8000_0100] = 0xAB
+1062A023
+// 0x0C: lw   x10, 256(x5)       ; x10 = MEM[0x8000_0100] = 0xAB
+1002A503
+
+// === Faz 2: AXI DMEM Yazma/Okuma (0x8001_0000) ===
+// 0x10: lui  x5, 0x80010        ; x5 = 0x8001_0000
+800102B7
+// 0x14: addi x6, x0, 0x05A      ; x6 = 0x5A
+05A00313
+// 0x18: sw   x6, 0(x5)          ; AXI_DMEM[0] = 0x5A
+0062A023
+// 0x1C: lw   x11, 0(x5)         ; x11 = AXI_DMEM[0] = 0x5A
+0002A583
+
+// === Faz 3: UART STATUS okuma (0x4000_0008) ===
+// 0x20: lui  x5, 0x40000        ; x5 = 0x4000_0000 (UART tabanı)
+400002B7
+// 0x24: lw   x12, 8(x5)         ; x12 = UART_STATUS (beklenen: 0x0A)
+0082A603
+
+// === Faz 4: SPI CTRL yazma/okuma (0x4000_010C) ===
+// 0x28: addi x5, x5, 0x100      ; x5 = 0x4000_0100 (SPI tabanı)
+10028293
+// 0x2C: addi x6, x0, 0x041      ; x6 = 0x41 (en=1, cs_en=1, mode0)
+04100313
+// 0x30: sw   x6, 12(x5)         ; SPI_CTRL = 0x41
+0062A623
+// 0x34: lw   x13, 12(x5)        ; x13 = SPI_CTRL = 0x41
+00C2A683
+
+// === Faz 5: I2C CTRL yazma/okuma (0x4000_020C) ===
+// 0x38: addi x5, x5, 0x100      ; x5 = 0x4000_0200 (I2C tabanı)
+10028293
+// 0x3C: addi x6, x0, 0x001      ; x6 = 0x01 (en=1)
+00100313
+// 0x40: sw   x6, 12(x5)         ; I2C_CTRL = 0x01
+0062A623
+// 0x44: lw   x14, 12(x5)        ; x14 = I2C_CTRL = 0x01
+00C2A703
+
+// === Faz 6: DSP CTRL yazma/okuma (0x4000_1000) ===
+// 0x48: lui  x5, 0x40001        ; x5 = 0x4000_1000 (DSP tabanı)
+400012B7
+// 0x4C: addi x6, x0, 0x001      ; x6 = 0x01 (enable)
+00100313
+// 0x50: sw   x6, 0(x5)          ; DSP_CTRL = 0x01
+0062A023
+// 0x54: lw   x15, 0(x5)         ; x15 = DSP_CTRL = 0x01
+0002A783
+
+// === Faz 7: AXI DMEM kalıcılık kontrolü ===
+// 0x58: lui  x5, 0x80010        ; x5 = 0x8001_0000
+800102B7
+// 0x5C: lw   x16, 0(x5)         ; x16 = AXI_DMEM[0] = 0x5A (hâlâ orada mı?)
+0002A803
+
+// === Faz 8: HALT — sonsuz döngü ===
+// 0x60: jal  x0, 0              ; j . (aynı adrese atla)
+0000006F

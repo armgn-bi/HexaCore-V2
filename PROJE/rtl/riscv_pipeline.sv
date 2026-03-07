@@ -2,41 +2,42 @@
 /* verilator lint_off IMPORTSTAR */
 
 
-// Aşağıda bulunan output siyalleri tasarladığınız risc-v işlemcinin log dosyalasını doldurmak için kullanılacak
-// yani örnek olarak update_o sinyali işlemcideki değişimin logunun basılması için valid sinyali olacak,
-// valid sinyaliniz 1 olduğunda reg_addr_o sinyalinde gelen bilgi log dosyasının ilgili kısımına düzgün
-// formatta basılacak.
+// Aï¿½aï¿½ï¿½da bulunan output siyalleri tasarladï¿½ï¿½ï¿½nï¿½z risc-v iï¿½lemcinin log dosyalasï¿½nï¿½ doldurmak iï¿½in kullanï¿½lacak
+// yani ï¿½rnek olarak update_o sinyali iï¿½lemcideki deï¿½iï¿½imin logunun basï¿½lmasï¿½ iï¿½in valid sinyali olacak,
+// valid sinyaliniz 1 olduï¿½unda reg_addr_o sinyalinde gelen bilgi log dosyasï¿½nï¿½n ilgili kï¿½sï¿½mï¿½na dï¿½zgï¿½n
+// formatta basï¿½lacak.
 
 
 // 
-//  data_o ve addr_i sinyallerine bit uzunluğuna uygun "0" bağlayın.
+//  data_o ve addr_i sinyallerine bit uzunluï¿½una uygun "0" baï¿½layï¿½n.
 // 
 
-// retire terimi kullanma sebebimiz o cycle'daki işlemin bittiği noktada verilecek sinyaller olmasıdır.
-// Memory read ve write sinyali memory üzerindeki değişimi loglamanız içindir. Memory'nize bağlamak kendi 
-// tercihinize bağlıdır. Yani, memory'nizde değişim olacağını instructiondan anlayıp sinyal belirleyebilirsiniz.
+// retire terimi kullanma sebebimiz o cycle'daki iï¿½lemin bittiï¿½i noktada verilecek sinyaller olmasï¿½dï¿½r.
+// Memory read ve write sinyali memory ï¿½zerindeki deï¿½iï¿½imi loglamanï¿½z iï¿½indir. Memory'nize baï¿½lamak kendi 
+// tercihinize baï¿½lï¿½dï¿½r. Yani, memory'nizde deï¿½iï¿½im olacaï¿½ï¿½nï¿½ instructiondan anlayï¿½p sinyal belirleyebilirsiniz.
 //
 
 //
-// Kurmanız beklenen sistemde asıl olan değişimleri anlamak ve göstermektir. İşlemci gibi büyük sistemlerin testlerini
-// waveform üzerinden yapmak imkansız olacağı için burada otomatik bir kontrol sistemine uyum sağlayacak bir kontrol loglama
-// sistemi kurmanız gerekiyor. İşlemci mimarisi öğrenmenizin yanında bu ödevin size kazandırmasını hedeflediğimiz şey budur.
+// Kurmanï¿½z beklenen sistemde asï¿½l olan deï¿½iï¿½imleri anlamak ve gï¿½stermektir. ï¿½ï¿½lemci gibi bï¿½yï¿½k sistemlerin testlerini
+// waveform ï¿½zerinden yapmak imkansï¿½z olacaï¿½ï¿½ iï¿½in burada otomatik bir kontrol sistemine uyum saï¿½layacak bir kontrol loglama
+// sistemi kurmanï¿½z gerekiyor. ï¿½ï¿½lemci mimarisi ï¿½ï¿½renmenizin yanï¿½nda bu ï¿½devin size kazandï¿½rmasï¿½nï¿½ hedeflediï¿½imiz ï¿½ey budur.
 //
 
 module riscv_pipeline
   import riscv_pkg::*;
 #(
   parameter string DMemInitFile = "dmem.mem",
-  parameter string IMemInitFile = "imem.mem"
+  parameter string IMemInitFile = "imem.mem",
+  parameter int    INT_DMEM_BYTES = 32768   // Dahili DMEM boyutu (byte)
 )(
   input  logic             clk_i,
   input  logic             rstn_i,
 
-  // debug arabirimi (DMEM içinden okunur)
+  // debug arabirimi (DMEM iï¿½inden okunur)
   input  logic  [XLEN-1:0] addr_i,
   output logic  [XLEN-1:0] data_o,
 
-  // retire/scoreboard portları
+  // retire/scoreboard portlarï¿½
   output logic             update_o,
   output logic [XLEN-1:0]  pc_o,
   output logic [XLEN-1:0]  instr_o,
@@ -45,10 +46,33 @@ module riscv_pipeline
   output logic [XLEN-1:0]  mem_addr_o,
   output logic [XLEN-1:0]  mem_data_o,
   output logic             mem_wrt_o,
-  output logic             mem_read_o
+  output logic             mem_read_o,
+
+  // â”€â”€ Harici bellek arayÃ¼zÃ¼ (AXI yolu) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Dahili DMEM aralÄ±ÄŸÄ± dÄ±ÅŸÄ±ndaki adresler bu porttan yÃ¶nlendirilir.
+  // VarsayÄ±lan deÄŸerler: eski TB'ler (ext portlarÄ± baÄŸlamayan) iÃ§in geri uyumlu.
+  output logic              ext_mem_read_o,
+  output logic              ext_mem_write_o,
+  output logic [1:0]        ext_mem_size_o,
+  output logic              ext_mem_unsigned_o,
+  output logic [XLEN-1:0]  ext_mem_addr_o,
+  output logic [XLEN-1:0]  ext_mem_wdata_o,
+  input  logic [XLEN-1:0]  ext_mem_rdata_i  = '0,
+  input  logic              ext_mem_ready_i  = 1'b1
 );
 
   localparam logic [XLEN-1:0] IMEM_BASE = 32'h8000_0000;
+
+  // â•â•â• Dahili DMEM adres aralÄ±ÄŸÄ± â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // [IMEM_BASE, IMEM_BASE + INT_DMEM_BYTES) â†’ dahili DMEM
+  // Bunun dÄ±ÅŸÄ±ndaki tÃ¼m adresler â†’ harici AXI yolu
+  localparam logic [XLEN-1:0] INT_DMEM_END = IMEM_BASE + XLEN'(INT_DMEM_BYTES);
+
+  // â•â•â• Harici bellek eriÅŸim kontrol sinyalleri â•â•â•â•â•
+  // (TanÄ±mlar burada, atamalar MEM aÅŸamasÄ±nda)
+  wire is_int_dmem;          // MEM adresi dahili DMEM aralÄ±ÄŸÄ±nda mÄ±?
+  wire is_ext_access;        // AXI'ye yÃ¶nlendirilecek eriÅŸim var mÄ±?
+  wire ext_stall_w;          // Pipeline dondurma: AXI yanÄ±t bekliyor
 
   // ????????????????????????????????????????????????? IF ?????????????????????????????????????????????????
   logic [XLEN-1:0] pcF, pcPlus4F;
@@ -60,11 +84,12 @@ module riscv_pipeline
 
   assign pcPlus4F = pcF + 32'd4;
 
-  // redirect geldiğinde stall, PC'yi engellemesin (redirect öncelikli)
+  // redirect geldiï¿½inde stall, PC'yi engellemesin (redirect ï¿½ncelikli)
   wire stallF_eff = stallF && !pcSrcE;
 
   always_ff @(posedge clk_i) begin
     if (!rstn_i)            pcF <= IMEM_BASE;
+    else if (ext_stall_w)   ;  // AXI bekleme â€” PC dondur
     else if (pcSrcE)        pcF <= pcTargetE;
     else if (!stallF_eff)   pcF <= pcPlus4F;
   end
@@ -80,13 +105,13 @@ module riscv_pipeline
   logic            validD;
 
   always_ff @(posedge clk_i) begin
-    if (!rstn_i || flushD) begin
+    if (!rstn_i || (!ext_stall_w && flushD)) begin
       pcD      <= '0;
       pcPlus4D <= '0;
       instrD   <= 32'h0000_0013; // NOP
       validD   <= 1'b0;
     end
-    else if (!stallD) begin
+    else if (!stallD && !ext_stall_w) begin
       pcD      <= pcF;
       pcPlus4D <= pcPlus4F;
       instrD   <= instrF;
@@ -150,7 +175,7 @@ module riscv_pipeline
     .rd2_o (rd2D)
   );
 
-  // WB?ID tek-cycle bypass (yazılan değer henüz RF'ye düşmeden ID kullanırsa)
+  // WB?ID tek-cycle bypass (yazï¿½lan deï¿½er henï¿½z RF'ye dï¿½ï¿½meden ID kullanï¿½rsa)
   wire [XLEN-1:0] rs1D_byp = (reg_writeW && (rdW != 5'd0) && (rdW == rs1D_w)) ? result_W : rd1D;
   wire [XLEN-1:0] rs2D_byp = (reg_writeW && (rdW != 5'd0) && (rdW == rs2D_w)) ? result_W : rd2D;
 
@@ -194,9 +219,9 @@ module riscv_pipeline
   logic       mem_unsignedE;
   logic       is_branchE, is_jalE, is_jalrE, is_luiE;
 
-  // pc redirect olduğunda da E'yi bubble'la
+  // pc redirect olduï¿½unda da E'yi bubble'la
   always_ff @(posedge clk_i) begin
-    if (!rstn_i || flushE || pcSrcE) begin
+    if (!rstn_i || (!ext_stall_w && (flushE || pcSrcE))) begin
       reg_writeE     <= 1'b0;
       alu_src_a_pcE  <= 1'b0;
       alu_src_b_immE <= 1'b0;
@@ -224,7 +249,7 @@ module riscv_pipeline
       rdE            <= '0;
       validE         <= 1'b0;
     end
-    else begin
+    else if (!ext_stall_w) begin
       // veri
       pcE      <= pcD;
       pcPlus4E <= pcPlus4D;
@@ -266,7 +291,7 @@ module riscv_pipeline
     .alu_ctrl_o(alu_ctrlE)
   );
 
-  // Forwarding seçicileri
+  // Forwarding seï¿½icileri
   logic [1:0] forwardA, forwardB;
   logic       reg_writeM;
   logic [4:0] rdM;
@@ -282,10 +307,10 @@ module riscv_pipeline
     .forwardB  (forwardB)
   );
 
-  // EX/MEM'den ileri verilebilecek değer: klasik beş aşamalıda ALU sonucu
+  // EX/MEM'den ileri verilebilecek deï¿½er: klasik beï¿½ aï¿½amalï¿½da ALU sonucu
   logic [XLEN-1:0] aluY_M;
 
-  // A ve B kaynakları (tek noktadan seçim)
+  // A ve B kaynaklarï¿½ (tek noktadan seï¿½im)
   function automatic logic [XLEN-1:0] sel_fwd(
     input logic [1:0] sel,
     input logic [XLEN-1:0] idex,
@@ -302,7 +327,7 @@ module riscv_pipeline
   wire [XLEN-1:0] aFwd = sel_fwd(forwardA, rd1E, aluY_M, result_W);
   wire [XLEN-1:0] bFwd = sel_fwd(forwardB, rd2E, aluY_M, result_W);
 
-  // LUI & ALU operand seçimi
+  // LUI & ALU operand seï¿½imi
   wire [XLEN-1:0] srcA = is_luiE ? '0 : (alu_src_a_pcE ? pcE : aFwd);
   wire [XLEN-1:0] srcB = (alu_src_b_immE ? immE : bFwd);
 
@@ -323,7 +348,7 @@ module riscv_pipeline
   // Branch compare (forwarded rs1/rs2 ile)
   logic takeBranchE;
   branch_compare u_brcmp (
-    .rs1_i   (aFwd),     // eşitlik ve < karşılaştırmaları forwarded değerlerle
+    .rs1_i   (aFwd),     // eï¿½itlik ve < karï¿½ï¿½laï¿½tï¿½rmalarï¿½ forwarded deï¿½erlerle
     .rs2_i   (bFwd),
     .funct3_i(funct3E),
     .take_o  (takeBranchE)
@@ -365,7 +390,7 @@ module riscv_pipeline
       reg_writeM_r  <= 1'b0;
       validM        <= 1'b0;
     end
-    else begin
+    else if (!ext_stall_w) begin
       aluY_M        <= aluY_E;
       storeDataM    <= bFwd;         // store verisi
       rdM           <= rdE;
@@ -382,23 +407,56 @@ module riscv_pipeline
   end
   assign reg_writeM = reg_writeM_r;
 
-  // DMEM (BASE=IMEM_BASE; testlerin adres alanıyla uyumlu)
-  logic [XLEN-1:0] readDataM;
+  // â•â•â• Adres YÃ¶nlendirme: Dahili DMEM vs Harici AXI â•â•â•
+  // Dahili DMEM aralÄ±ÄŸÄ±: [IMEM_BASE, IMEM_BASE + INT_DMEM_BYTES)
+  assign is_int_dmem   = (aluY_M >= IMEM_BASE) && (aluY_M < INT_DMEM_END);
+  assign is_ext_access = (mem_readM || mem_writeM) && !is_int_dmem;
+
+  // â•â•â• Harici Bellek Ä°stek Takibi â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // AXI Master IF'e tek cycle pulse gÃ¶nder, sonra yanÄ±t bekle.
+  // ext_req_sent_q: istek gÃ¶nderildi, AXI iÅŸliyor
+  logic ext_req_sent_q;
+
+  always_ff @(posedge clk_i or negedge rstn_i) begin
+    if (!rstn_i)
+      ext_req_sent_q <= 1'b0;
+    else if (!ext_stall_w)
+      ext_req_sent_q <= 1'b0;   // Stall kalktÄ± â†’ temizle
+    else if (is_ext_access && !ext_req_sent_q)
+      ext_req_sent_q <= 1'b1;   // Ä°stek gÃ¶nderildi â†’ iÅŸaretle
+  end
+
+  // Harici port sinyalleri â€” yalnÄ±zca ilk cycle'da aktif (pulse)
+  assign ext_mem_read_o     = mem_readM  && !is_int_dmem && !ext_req_sent_q;
+  assign ext_mem_write_o    = mem_writeM && !is_int_dmem && !ext_req_sent_q;
+  assign ext_mem_size_o     = mem_sizeM;
+  assign ext_mem_unsigned_o = mem_unsignedM;
+  assign ext_mem_addr_o     = aluY_M;
+  assign ext_mem_wdata_o    = storeDataM;
+
+  // Stall: AXI eriÅŸimi devam ediyor ve yanÄ±t henÃ¼z gelmedi
+  assign ext_stall_w = is_ext_access && !ext_mem_ready_i;
+
+  // â•â•â• DMEM â€” yalnÄ±zca dahili adres aralÄ±ÄŸÄ± â•â•â•â•â•â•â•
+  logic [XLEN-1:0] int_readDataM;
   dmem #(.DMemInitFile(DMemInitFile), .BASE(IMEM_BASE)) u_dmem (
     .clk_i         (clk_i),
     .rstn_i        (rstn_i),
-    .mem_read_i    (mem_readM),
-    .mem_write_i   (mem_writeM),
+    .mem_read_i    (mem_readM  && is_int_dmem),
+    .mem_write_i   (mem_writeM && is_int_dmem),
     .mem_size_i    (mem_sizeM),
     .mem_unsigned_i(mem_unsignedM),
     .addr_i        (aluY_M),
     .wdata_i       (storeDataM),
     .dbg_addr_i    (addr_i),
-    .rdata_o       (readDataM),
+    .rdata_o       (int_readDataM),
     .dbg_data_o    (data_o)
   );
 
-  // store log verisini mem_size'e göre kırp
+  // ReadData MUX: dahili DMEM veya harici AXI
+  wire [XLEN-1:0] readDataM = is_int_dmem ? int_readDataM : ext_mem_rdata_i;
+
+  // store log verisini mem_size'e gï¿½re kï¿½rp
   logic [XLEN-1:0] storeLogM;
   always_comb begin
     unique case (mem_sizeM)
@@ -430,7 +488,7 @@ module riscv_pipeline
       mem_wrtW     <= 1'b0;
       mem_readW    <= 1'b0;
     end
-    else begin
+    else if (!ext_stall_w) begin
       aluY_W       <= aluY_M;
       readDataW    <= readDataM;
       rdW          <= rdM;
@@ -459,7 +517,7 @@ module riscv_pipeline
     endcase
   end
 
-  // retire/scoreboard bağlantıları
+  // retire/scoreboard baï¿½lantï¿½larï¿½
   assign reg_addr_o = reg_writeW ? rdW      : 5'd0;
   assign reg_data_o = reg_writeW ? result_W : '0;
 

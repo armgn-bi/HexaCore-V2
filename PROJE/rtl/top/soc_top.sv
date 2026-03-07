@@ -58,11 +58,8 @@ module soc_top
   // ════════════════════════════════════════════════
   // Varsayılan atamalar — henüz bağlanmamış portlar
   // ════════════════════════════════════════════════
-  assign uart_tx_o      = 1'b1;     // idle-high
-  assign uart_irq_o     = 1'b0;
-  assign spi_sck_o      = 1'b0;
-  assign spi_mosi_o     = 1'b0;
-  assign spi_ss_o       = 4'b1111;  // tüm CS deassert
+  // uart_tx_o ve uart_irq_o artık axi_uart modülünden sürülüyor
+  // spi_sck_o, spi_mosi_o, spi_ss_o artık axi_spi modülünden sürülüyor
   assign dsp_s_tready_o = 1'b0;
   assign dsp_m_tdata_o  = '0;
   assign dsp_m_tvalid_o = 1'b0;
@@ -126,6 +123,20 @@ module soc_top
   // RISC-V Core Instance
   // (riscv_pipeline portlarını mevcut haliyle kullanıyoruz)
   // ════════════════════════════════════════════════
+  // ════════════════════════════════════════════════
+  // Pipeline ↔ AXI Master IF bağlantı sinyalleri
+  // Dahili DMEM aralığı dışındaki adresler pipeline'dan
+  // ext_mem_* portları üzerinden AXI bus'a yönlendirilir.
+  // ════════════════════════════════════════════════
+  logic             core_mem_read;
+  logic             core_mem_write;
+  logic [1:0]       core_mem_size;
+  logic             core_mem_unsigned;
+  logic [XLEN-1:0]  core_mem_addr;
+  logic [XLEN-1:0]  core_mem_wdata;
+  logic [XLEN-1:0]  core_mem_rdata;
+  logic             core_mem_ready;
+
   riscv_pipeline #(
     .IMemInitFile (IMEM_INIT_FILE),
     .DMemInitFile (DMEM_INIT_FILE)
@@ -142,37 +153,18 @@ module soc_top
     .mem_addr_o (mem_addr_o),
     .mem_data_o (mem_data_o),
     .mem_wrt_o  (mem_wrt_o),
-    .mem_read_o (mem_read_o)
+    .mem_read_o (mem_read_o),
+
+    // Harici bellek arayüzü → AXI Master IF
+    .ext_mem_read_o     (core_mem_read),
+    .ext_mem_write_o    (core_mem_write),
+    .ext_mem_size_o     (core_mem_size),
+    .ext_mem_unsigned_o (core_mem_unsigned),
+    .ext_mem_addr_o     (core_mem_addr),
+    .ext_mem_wdata_o    (core_mem_wdata),
+    .ext_mem_rdata_i    (core_mem_rdata),
+    .ext_mem_ready_i    (core_mem_ready)
   );
-
-  // ════════════════════════════════════════════════
-  // NOT: Mevcut riscv_pipeline DMEM'i dahili olarak kullanıyor.
-  // AXI Master Bridge'e geçiş için pipeline'a yeni portlar eklemek
-  // veya pipeline'ı wrapper ile sarmak gerekecek.
-  //
-  // ŞİMDİLİK: AXI altyapısı hazır, ama Core hâlâ kendi DMEM'ini
-  // dahili olarak kullanmaya devam ediyor.
-  // Aşağıdaki AXI Master IF örnek olarak bağlanmıştır;
-  // pipeline modifiye edildiğinde aktif hale gelecektir.
-  // ════════════════════════════════════════════════
-
-  // Placeholder sinyaller — pipeline AXI portlarına sahip olduğunda bunlar bağlanacak
-  logic             core_mem_read;
-  logic             core_mem_write;
-  logic [1:0]       core_mem_size;
-  logic             core_mem_unsigned;
-  logic [XLEN-1:0]  core_mem_addr;
-  logic [XLEN-1:0]  core_mem_wdata;
-  logic [XLEN-1:0]  core_mem_rdata;
-  logic             core_mem_ready;
-
-  // Şimdilik idle — pipeline dönüştürüldüğünde bağlanacak
-  assign core_mem_read     = 1'b0;
-  assign core_mem_write    = 1'b0;
-  assign core_mem_size     = 2'b10;
-  assign core_mem_unsigned = 1'b0;
-  assign core_mem_addr     = '0;
-  assign core_mem_wdata    = '0;
 
   // ════════════════════════════════════════════════
   // AXI Master Interface
@@ -327,23 +319,117 @@ module soc_top
   );
 
   // ════════════════════════════════════════════════
-  // Slave 1–3: UART, SPI, I2C — henüz bağlanmadı
-  // Varsayılan yanıtlar: SLVERR + sinyaller deassert
-  // Periferaller eklendikçe bu bloklar gerçek modüllerle değiştirilecek.
+  // Slave 1: UART (AXI4-Lite Wrapper)
+  // Adres: 0x4000_0000 – 0x4000_00FF (256 B)
   // ════════════════════════════════════════════════
-  generate
-    for (genvar i = 1; i <= 3; i++) begin : gen_stub_slaves
-      // Her zaman hazır ol, hemen SLVERR yanıtı dön
-      assign slv_awready[i] = 1'b1;
-      assign slv_wready [i] = 1'b1;
-      assign slv_bresp  [i] = AXI_RESP_SLVERR;
-      assign slv_bvalid [i] = slv_awvalid[i] | slv_wvalid[i];
+  axi_uart u_axi_uart (
+    .clk_i            (clk_i),
+    .rstn_i           (rstn_i),
 
-      assign slv_arready[i] = 1'b1;
-      assign slv_rdata  [i] = 32'hDEAD_DEAD;
-      assign slv_rresp  [i] = AXI_RESP_SLVERR;
-      assign slv_rvalid [i] = slv_arvalid[i];
-    end
-  endgenerate
+    .s_axi_awaddr_i   (slv_awaddr  [SLV_UART]),
+    .s_axi_awprot_i   (slv_awprot  [SLV_UART]),
+    .s_axi_awvalid_i  (slv_awvalid [SLV_UART]),
+    .s_axi_awready_o  (slv_awready [SLV_UART]),
+    .s_axi_wdata_i    (slv_wdata   [SLV_UART]),
+    .s_axi_wstrb_i    (slv_wstrb   [SLV_UART]),
+    .s_axi_wvalid_i   (slv_wvalid  [SLV_UART]),
+    .s_axi_wready_o   (slv_wready  [SLV_UART]),
+    .s_axi_bresp_o    (slv_bresp   [SLV_UART]),
+    .s_axi_bvalid_o   (slv_bvalid  [SLV_UART]),
+    .s_axi_bready_i   (slv_bready  [SLV_UART]),
+    .s_axi_araddr_i   (slv_araddr  [SLV_UART]),
+    .s_axi_arprot_i   (slv_arprot  [SLV_UART]),
+    .s_axi_arvalid_i  (slv_arvalid [SLV_UART]),
+    .s_axi_arready_o  (slv_arready [SLV_UART]),
+    .s_axi_rdata_o    (slv_rdata   [SLV_UART]),
+    .s_axi_rresp_o    (slv_rresp   [SLV_UART]),
+    .s_axi_rvalid_o   (slv_rvalid  [SLV_UART]),
+    .s_axi_rready_i   (slv_rready  [SLV_UART]),
+
+    .tx_o             (uart_tx_o),
+    .rx_i             (uart_rx_i),
+    .irq_o            (uart_irq_o)
+  );
+
+  // ════════════════════════════════════════════════
+  // Slave 3: I2C Master (AXI4-Lite Wrapper)
+  // Adres: 0x4000_0200 – 0x4000_02FF (256 B)
+  // ════════════════════════════════════════════════
+  // Open-drain tristate logic: inout ↔ OE + input
+  logic i2c_scl_oe;
+  logic i2c_sda_oe;
+  logic i2c_scl_in;
+  logic i2c_sda_in;
+
+  assign i2c_scl_io = i2c_scl_oe ? 1'b0 : 1'bz;   // OE=1 → drive low
+  assign i2c_sda_io = i2c_sda_oe ? 1'b0 : 1'bz;   // OE=0 → release (pull-up)
+  assign i2c_scl_in = i2c_scl_io;
+  assign i2c_sda_in = i2c_sda_io;
+
+  axi_i2c u_axi_i2c (
+    .clk_i            (clk_i),
+    .rstn_i           (rstn_i),
+
+    .s_axi_awaddr_i   (slv_awaddr  [SLV_I2C]),
+    .s_axi_awprot_i   (slv_awprot  [SLV_I2C]),
+    .s_axi_awvalid_i  (slv_awvalid [SLV_I2C]),
+    .s_axi_awready_o  (slv_awready [SLV_I2C]),
+    .s_axi_wdata_i    (slv_wdata   [SLV_I2C]),
+    .s_axi_wstrb_i    (slv_wstrb   [SLV_I2C]),
+    .s_axi_wvalid_i   (slv_wvalid  [SLV_I2C]),
+    .s_axi_wready_o   (slv_wready  [SLV_I2C]),
+    .s_axi_bresp_o    (slv_bresp   [SLV_I2C]),
+    .s_axi_bvalid_o   (slv_bvalid  [SLV_I2C]),
+    .s_axi_bready_i   (slv_bready  [SLV_I2C]),
+    .s_axi_araddr_i   (slv_araddr  [SLV_I2C]),
+    .s_axi_arprot_i   (slv_arprot  [SLV_I2C]),
+    .s_axi_arvalid_i  (slv_arvalid [SLV_I2C]),
+    .s_axi_arready_o  (slv_arready [SLV_I2C]),
+    .s_axi_rdata_o    (slv_rdata   [SLV_I2C]),
+    .s_axi_rresp_o    (slv_rresp   [SLV_I2C]),
+    .s_axi_rvalid_o   (slv_rvalid  [SLV_I2C]),
+    .s_axi_rready_i   (slv_rready  [SLV_I2C]),
+
+    .scl_oe_o         (i2c_scl_oe),
+    .scl_i            (i2c_scl_in),
+    .sda_oe_o         (i2c_sda_oe),
+    .sda_i            (i2c_sda_in),
+    .irq_o            ()  // I2C IRQ — ileride top porta bağlanabilir
+  );
+
+  // ════════════════════════════════════════════════
+  // Slave 2: SPI Master (AXI4-Lite Wrapper)
+  // Adres: 0x4000_0100 – 0x4000_01FF (256 B)
+  // ════════════════════════════════════════════════
+  axi_spi u_axi_spi (
+    .clk_i            (clk_i),
+    .rstn_i           (rstn_i),
+
+    .s_axi_awaddr_i   (slv_awaddr  [SLV_SPI]),
+    .s_axi_awprot_i   (slv_awprot  [SLV_SPI]),
+    .s_axi_awvalid_i  (slv_awvalid [SLV_SPI]),
+    .s_axi_awready_o  (slv_awready [SLV_SPI]),
+    .s_axi_wdata_i    (slv_wdata   [SLV_SPI]),
+    .s_axi_wstrb_i    (slv_wstrb   [SLV_SPI]),
+    .s_axi_wvalid_i   (slv_wvalid  [SLV_SPI]),
+    .s_axi_wready_o   (slv_wready  [SLV_SPI]),
+    .s_axi_bresp_o    (slv_bresp   [SLV_SPI]),
+    .s_axi_bvalid_o   (slv_bvalid  [SLV_SPI]),
+    .s_axi_bready_i   (slv_bready  [SLV_SPI]),
+    .s_axi_araddr_i   (slv_araddr  [SLV_SPI]),
+    .s_axi_arprot_i   (slv_arprot  [SLV_SPI]),
+    .s_axi_arvalid_i  (slv_arvalid [SLV_SPI]),
+    .s_axi_arready_o  (slv_arready [SLV_SPI]),
+    .s_axi_rdata_o    (slv_rdata   [SLV_SPI]),
+    .s_axi_rresp_o    (slv_rresp   [SLV_SPI]),
+    .s_axi_rvalid_o   (slv_rvalid  [SLV_SPI]),
+    .s_axi_rready_i   (slv_rready  [SLV_SPI]),
+
+    .sck_o            (spi_sck_o),
+    .mosi_o           (spi_mosi_o),
+    .miso_i           (spi_miso_i),
+    .ss_o             (spi_ss_o),
+    .irq_o            ()  // SPI IRQ — ileride top porta bağlanabilir
+  );
 
 endmodule

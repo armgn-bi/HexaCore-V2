@@ -3,7 +3,7 @@
 # Usage: powershell -ExecutionPolicy Bypass -File run_soc_test.ps1
 
 $ErrorActionPreference = "Stop"
-$env:PATH = "C:\Armagan\Vivado\Vivado\2024.1\bin;" + $env:PATH
+$env:PATH = "C:\AMDDesignTools\2025.2\Vivado\bin;" + $env:PATH
 
 $simDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $simDir

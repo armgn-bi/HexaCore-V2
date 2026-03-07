@@ -1,11 +1,14 @@
 // filepath: tb/soc_tb/tb_soc_integration.sv
 // SoC Entegrasyon Testi
-// AXI Master IF → Interconnect → DMEM / DSP / Stub Slaves bağlantılarını doğrular.
+// AXI Master IF → Interconnect → DMEM / DSP / UART / SPI / I2C bağlantılarını doğrular.
 // Test akışı:
 //   1. DMEM'e yazma & geri okuma (word, half, byte)
 //   2. DSP register yazma & okuma (CTRL, DATA_IN, STATUS, DATA_OUT)
-//   3. Stub Slave (UART/SPI/I2C) erişimi → SLVERR beklenir
-//   4. Geçersiz adres → DECERR beklenir
+//   3. UART register erişimi + TX→RX loopback
+//  3A. SPI register erişimi + MOSI→MISO loopback transfer
+//  3B. I2C register erişimi (CTRL, PRESCALE, TXDATA)
+//  3C. I2C transaction testi (START + WRITE + STOP w/ slave model)
+//   4. DMEM ardışık erişim + DSP↔DMEM çapraz kontrol
 //
 // NOT: Bu testbench, soc_top'u değil, AXI altyapısını doğrudan sürer.
 //      Pipeline placeholder sinyallerini bypass ederek AXI Master IF'i
@@ -231,42 +234,351 @@ module tb_soc_integration;
     .s_axi_rready_i   (slv_rready  [SLV_DSP])
   );
   // ════════════════════════════════════════════════
-  // Slave 1–3: UART, SPI, I2C stubs (SLVERR döner)
-  // AXI protokol uyumlu — registered response
+  // Slave 1: UART (Gerçek modül)
+  // TX → RX loopback ile test edilir
   // ════════════════════════════════════════════════
-  generate
-    for (genvar i = 1; i <= 3; i++) begin : gen_stub_slaves
-      // Write: hemen kabul, bir sonraki cycle'da SLVERR yanıtı
-      logic wr_pending;
-      always_ff @(posedge clk or negedge rstn) begin
-        if (!rstn)
-          wr_pending <= 1'b0;
-        else if (!wr_pending && slv_awvalid[i] && slv_wvalid[i])
-          wr_pending <= 1'b1;
-        else if (wr_pending && slv_bready[i])
-          wr_pending <= 1'b0;
-      end
-      assign slv_awready[i] = !wr_pending;
-      assign slv_wready [i] = !wr_pending;
-      assign slv_bresp  [i] = AXI_RESP_SLVERR;
-      assign slv_bvalid [i] = wr_pending;
+  logic uart_tx_wire;
+  logic uart_irq_wire;
 
-      // Read: AR kabul, bir sonraki cycle'da SLVERR + DEAD data
-      logic rd_pending;
-      always_ff @(posedge clk or negedge rstn) begin
-        if (!rstn)
-          rd_pending <= 1'b0;
-        else if (!rd_pending && slv_arvalid[i])
-          rd_pending <= 1'b1;
-        else if (rd_pending && slv_rready[i])
-          rd_pending <= 1'b0;
+  axi_uart #(
+    .DEFAULT_BAUD_DIV (16'd0)   // Test için en hızlı baud (her 1 cycle'da tick)
+  ) u_axi_uart (
+    .clk_i            (clk),
+    .rstn_i           (rstn),
+
+    .s_axi_awaddr_i   (slv_awaddr  [SLV_UART]),
+    .s_axi_awprot_i   (slv_awprot  [SLV_UART]),
+    .s_axi_awvalid_i  (slv_awvalid [SLV_UART]),
+    .s_axi_awready_o  (slv_awready [SLV_UART]),
+    .s_axi_wdata_i    (slv_wdata   [SLV_UART]),
+    .s_axi_wstrb_i    (slv_wstrb   [SLV_UART]),
+    .s_axi_wvalid_i   (slv_wvalid  [SLV_UART]),
+    .s_axi_wready_o   (slv_wready  [SLV_UART]),
+    .s_axi_bresp_o    (slv_bresp   [SLV_UART]),
+    .s_axi_bvalid_o   (slv_bvalid  [SLV_UART]),
+    .s_axi_bready_i   (slv_bready  [SLV_UART]),
+    .s_axi_araddr_i   (slv_araddr  [SLV_UART]),
+    .s_axi_arprot_i   (slv_arprot  [SLV_UART]),
+    .s_axi_arvalid_i  (slv_arvalid [SLV_UART]),
+    .s_axi_arready_o  (slv_arready [SLV_UART]),
+    .s_axi_rdata_o    (slv_rdata   [SLV_UART]),
+    .s_axi_rresp_o    (slv_rresp   [SLV_UART]),
+    .s_axi_rvalid_o   (slv_rvalid  [SLV_UART]),
+    .s_axi_rready_i   (slv_rready  [SLV_UART]),
+
+    .tx_o             (uart_tx_wire),
+    .rx_i             (uart_tx_wire),   // TX → RX loopback
+    .irq_o            (uart_irq_wire)
+  );
+
+  // ════════════════════════════════════════════════
+  // Slave 3: I2C Master (Gerçek modül)
+  // Open-drain bus — pullup + tristate modelleme
+  // ════════════════════════════════════════════════
+  wire  i2c_scl_wire;
+  wire  i2c_sda_wire;
+
+  // Pull-up modeli
+  pullup (i2c_scl_wire);
+  pullup (i2c_sda_wire);
+
+  // Master OE sinyalleri
+  logic i2c_scl_oe, i2c_sda_oe;
+
+  assign i2c_scl_wire = i2c_scl_oe ? 1'b0 : 1'bz;
+  assign i2c_sda_wire = i2c_sda_oe ? 1'b0 : 1'bz;
+
+  logic i2c_irq_wire;
+
+  axi_i2c #(
+    .DEFAULT_PRESCALE (16'd1)   // Hızlı sim: SCL period = 4*(1+1) = 8 clk cycle
+  ) u_axi_i2c (
+    .clk_i            (clk),
+    .rstn_i           (rstn),
+
+    .s_axi_awaddr_i   (slv_awaddr  [SLV_I2C]),
+    .s_axi_awprot_i   (slv_awprot  [SLV_I2C]),
+    .s_axi_awvalid_i  (slv_awvalid [SLV_I2C]),
+    .s_axi_awready_o  (slv_awready [SLV_I2C]),
+    .s_axi_wdata_i    (slv_wdata   [SLV_I2C]),
+    .s_axi_wstrb_i    (slv_wstrb   [SLV_I2C]),
+    .s_axi_wvalid_i   (slv_wvalid  [SLV_I2C]),
+    .s_axi_wready_o   (slv_wready  [SLV_I2C]),
+    .s_axi_bresp_o    (slv_bresp   [SLV_I2C]),
+    .s_axi_bvalid_o   (slv_bvalid  [SLV_I2C]),
+    .s_axi_bready_i   (slv_bready  [SLV_I2C]),
+    .s_axi_araddr_i   (slv_araddr  [SLV_I2C]),
+    .s_axi_arprot_i   (slv_arprot  [SLV_I2C]),
+    .s_axi_arvalid_i  (slv_arvalid [SLV_I2C]),
+    .s_axi_arready_o  (slv_arready [SLV_I2C]),
+    .s_axi_rdata_o    (slv_rdata   [SLV_I2C]),
+    .s_axi_rresp_o    (slv_rresp   [SLV_I2C]),
+    .s_axi_rvalid_o   (slv_rvalid  [SLV_I2C]),
+    .s_axi_rready_i   (slv_rready  [SLV_I2C]),
+
+    .scl_oe_o         (i2c_scl_oe),
+    .scl_i            (i2c_scl_wire),
+    .sda_oe_o         (i2c_sda_oe),
+    .sda_i            (i2c_sda_wire),
+    .irq_o            (i2c_irq_wire)
+  );
+
+  // ── Basit I2C Slave Modeli (7-bit adres = 7'h50) ──────────
+  // START algılar, adres byte alır, ACK verir, veri byte alır/gönderir.
+  logic       slv_sda_oe = 1'b0;  // slave SDA sürücü
+  assign i2c_sda_wire = slv_sda_oe ? 1'b0 : 1'bz;
+
+  localparam logic [6:0] I2C_SLAVE_ADDR = 7'h50;
+
+  logic [7:0] slv_rx_shift;
+  logic [2:0] slv_bit_cnt;
+  logic [7:0] slv_mem [0:3];     // 4-byte internal memory
+  logic [7:0] slv_tx_shift;
+  logic       slv_rw_bit;        // 0=write, 1=read
+  logic [1:0] slv_byte_cnt;
+
+  typedef enum logic [3:0] {
+    SLV_IDLE,
+    SLV_ADDR_BIT,
+    SLV_ADDR_ACK,
+    SLV_WR_BIT,
+    SLV_WR_ACK,
+    SLV_RD_BIT,
+    SLV_RD_ACK_WAIT
+  } slv_state_t;
+
+  slv_state_t slv_state = SLV_IDLE;
+
+  // START / STOP detect (SDA kenarları SCL=1 iken)
+  logic sda_prev = 1'b1;
+  logic scl_prev = 1'b1;
+  logic start_det, stop_det;
+
+  always @(posedge clk) begin
+    sda_prev <= i2c_sda_wire;
+    scl_prev <= i2c_scl_wire;
+  end
+
+  assign start_det = scl_prev && i2c_scl_wire && sda_prev && !i2c_sda_wire; // SDA ↓ while SCL=1
+  assign stop_det  = scl_prev && i2c_scl_wire && !sda_prev && i2c_sda_wire; // SDA ↑ while SCL=1
+
+  // SCL rising edge detect (data sample)
+  wire scl_rise = !scl_prev && i2c_scl_wire;
+  // SCL falling edge detect (data change)
+  wire scl_fall = scl_prev && !i2c_scl_wire;
+
+  always @(posedge clk or negedge rstn) begin
+    if (!rstn) begin
+      slv_state    <= SLV_IDLE;
+      slv_sda_oe   <= 1'b0;
+      slv_bit_cnt  <= 3'd0;
+      slv_rx_shift <= 8'd0;
+      slv_byte_cnt <= 2'd0;
+      slv_rw_bit   <= 1'b0;
+      slv_tx_shift <= 8'd0;
+      slv_mem[0]   <= 8'hA1;
+      slv_mem[1]   <= 8'hB2;
+      slv_mem[2]   <= 8'hC3;
+      slv_mem[3]   <= 8'hD4;
+    end else begin
+      // START → baştan başla
+      if (start_det) begin
+        slv_state    <= SLV_ADDR_BIT;
+        slv_bit_cnt  <= 3'd7;
+        slv_rx_shift <= 8'd0;
+        slv_sda_oe   <= 1'b0;
+        slv_byte_cnt <= 2'd0;
       end
-      assign slv_arready[i] = !rd_pending;
-      assign slv_rdata  [i] = 32'hDEAD_DEAD;
-      assign slv_rresp  [i] = AXI_RESP_SLVERR;
-      assign slv_rvalid [i] = rd_pending;
+      // STOP → idle
+      else if (stop_det) begin
+        slv_state  <= SLV_IDLE;
+        slv_sda_oe <= 1'b0;
+      end
+      else begin
+        case (slv_state)
+          SLV_IDLE: begin
+            slv_sda_oe <= 1'b0;
+          end
+
+          // ── Adres byte alma (7-bit addr + R/W) ──
+          SLV_ADDR_BIT: begin
+            if (scl_rise) begin
+              slv_rx_shift <= {slv_rx_shift[6:0], i2c_sda_wire};
+              if (slv_bit_cnt == 3'd0)
+                slv_state <= SLV_ADDR_ACK;
+              else
+                slv_bit_cnt <= slv_bit_cnt - 3'd1;
+            end
+          end
+
+          SLV_ADDR_ACK: begin
+            if (scl_fall) begin
+              // Adres uyuyor mu?
+              if (slv_rx_shift[7:1] == I2C_SLAVE_ADDR) begin
+                slv_sda_oe  <= 1'b1;   // ACK = SDA low
+                slv_rw_bit  <= slv_rx_shift[0];
+                slv_bit_cnt <= 3'd7;
+                slv_byte_cnt <= 2'd0;
+              end else begin
+                slv_sda_oe <= 1'b0;     // NACK
+                slv_state  <= SLV_IDLE;
+              end
+            end
+            // ACK'den sonra, SCL tekrar düşünce veri fazına geç
+            if (scl_rise && slv_sda_oe) begin
+              // ACK gönderildi, SCL rise — hazırlan
+            end
+            if (scl_fall && slv_sda_oe) begin
+              slv_sda_oe <= 1'b0;  // ACK bitti, SDA'yı bırak
+              if (slv_rw_bit) begin
+                // READ: slave veri gönderecek
+                slv_tx_shift <= slv_mem[0];
+                slv_state    <= SLV_RD_BIT;
+              end else begin
+                // WRITE: slave veri alacak
+                slv_state <= SLV_WR_BIT;
+              end
+            end
+          end
+
+          // ── Write: Veri byte alma ──
+          SLV_WR_BIT: begin
+            if (scl_rise) begin
+              slv_rx_shift <= {slv_rx_shift[6:0], i2c_sda_wire};
+              if (slv_bit_cnt == 3'd0)
+                slv_state <= SLV_WR_ACK;
+              else
+                slv_bit_cnt <= slv_bit_cnt - 3'd1;
+            end
+          end
+
+          SLV_WR_ACK: begin
+            if (scl_fall && !slv_sda_oe) begin
+              // ACK gönder
+              slv_sda_oe <= 1'b1;
+              slv_mem[slv_byte_cnt] <= slv_rx_shift;
+            end
+            if (scl_fall && slv_sda_oe) begin
+              // ACK bitti
+              slv_sda_oe  <= 1'b0;
+              slv_bit_cnt <= 3'd7;
+              slv_byte_cnt <= slv_byte_cnt + 2'd1;
+              slv_state   <= SLV_WR_BIT;
+            end
+          end
+
+          // ── Read: Veri byte gönderme ──
+          SLV_RD_BIT: begin
+            if (scl_fall) begin
+              // MSB-first: bit gönder
+              slv_sda_oe <= !slv_tx_shift[7];  // bit=1→release, bit=0→drive
+              slv_tx_shift <= {slv_tx_shift[6:0], 1'b0};
+              if (slv_bit_cnt == 3'd0) begin
+                slv_state <= SLV_RD_ACK_WAIT;
+              end else begin
+                slv_bit_cnt <= slv_bit_cnt - 3'd1;
+              end
+            end
+          end
+
+          SLV_RD_ACK_WAIT: begin
+            if (scl_fall) begin
+              slv_sda_oe <= 1'b0;  // SDA bırak, master ACK/NACK gönderecek
+            end
+            if (scl_rise) begin
+              // Master ACK: SDA=0 → devam, NACK: SDA=1 → dur
+              if (!i2c_sda_wire) begin
+                // ACK — sonraki byte gönder
+                slv_byte_cnt <= slv_byte_cnt + 2'd1;
+                slv_tx_shift <= slv_mem[slv_byte_cnt + 2'd1];
+                slv_bit_cnt  <= 3'd7;
+                slv_state    <= SLV_RD_BIT;
+              end else begin
+                // NACK — dur
+                slv_state <= SLV_IDLE;
+              end
+            end
+          end
+
+          default: slv_state <= SLV_IDLE;
+        endcase
+      end
     end
-  endgenerate
+  end
+
+  // ════════════════════════════════════════════════
+  // Slave 2: SPI Master (Gerçek modül)
+  // MOSI → MISO loopback ile test edilir (basit SPI slave modeli)
+  // ════════════════════════════════════════════════
+  logic spi_sck_wire;
+  logic spi_mosi_wire;
+  logic spi_miso_wire;
+  logic [3:0] spi_ss_wire;
+  logic spi_irq_wire;
+
+  axi_spi #(
+    .DEFAULT_CLK_DIV (8'd0)   // En hızlı: SCK half-period = 1 clk cycle
+  ) u_axi_spi (
+    .clk_i            (clk),
+    .rstn_i           (rstn),
+
+    .s_axi_awaddr_i   (slv_awaddr  [SLV_SPI]),
+    .s_axi_awprot_i   (slv_awprot  [SLV_SPI]),
+    .s_axi_awvalid_i  (slv_awvalid [SLV_SPI]),
+    .s_axi_awready_o  (slv_awready [SLV_SPI]),
+    .s_axi_wdata_i    (slv_wdata   [SLV_SPI]),
+    .s_axi_wstrb_i    (slv_wstrb   [SLV_SPI]),
+    .s_axi_wvalid_i   (slv_wvalid  [SLV_SPI]),
+    .s_axi_wready_o   (slv_wready  [SLV_SPI]),
+    .s_axi_bresp_o    (slv_bresp   [SLV_SPI]),
+    .s_axi_bvalid_o   (slv_bvalid  [SLV_SPI]),
+    .s_axi_bready_i   (slv_bready  [SLV_SPI]),
+    .s_axi_araddr_i   (slv_araddr  [SLV_SPI]),
+    .s_axi_arprot_i   (slv_arprot  [SLV_SPI]),
+    .s_axi_arvalid_i  (slv_arvalid [SLV_SPI]),
+    .s_axi_arready_o  (slv_arready [SLV_SPI]),
+    .s_axi_rdata_o    (slv_rdata   [SLV_SPI]),
+    .s_axi_rresp_o    (slv_rresp   [SLV_SPI]),
+    .s_axi_rvalid_o   (slv_rvalid  [SLV_SPI]),
+    .s_axi_rready_i   (slv_rready  [SLV_SPI]),
+
+    .sck_o            (spi_sck_wire),
+    .mosi_o           (spi_mosi_wire),
+    .miso_i           (spi_miso_wire),
+    .ss_o             (spi_ss_wire),
+    .irq_o            (spi_irq_wire)
+  );
+
+  // ── Basit SPI Slave Modeli ────────────────────────
+  // CS aktif iken, MOSI'den gelen veriyi 1-cycle gecikmeyle MISO'ya döner
+  // (shift register — her SCK kenarında MOSI'yi yakalar, MISO'dan çıkar)
+  // SPI Mode 0 (CPOL=0, CPHA=0) için: sample on rising edge, shift on falling
+  logic [7:0] spi_slv_shift = 8'hA5;   // Slave başlangıç verisi
+  logic       spi_sck_prev  = 1'b0;
+
+  always @(posedge clk) begin
+    spi_sck_prev <= spi_sck_wire;
+  end
+
+  wire spi_sck_rise = !spi_sck_prev && spi_sck_wire;
+  wire spi_sck_fall = spi_sck_prev && !spi_sck_wire;
+
+  // Slave: rising edge'de MOSI sample, falling edge'de shift
+  always @(posedge clk or negedge rstn) begin
+    if (!rstn) begin
+      spi_slv_shift <= 8'hA5;
+    end else if (!spi_ss_wire[0]) begin  // CS0 aktif (low)
+      if (spi_sck_rise) begin
+        // Rising edge: sample MOSI, shift in
+        spi_slv_shift <= {spi_slv_shift[6:0], spi_mosi_wire};
+      end
+    end else begin
+      spi_slv_shift <= 8'hA5;  // CS deassert → reset
+    end
+  end
+
+  // MISO: slave shift register'ın MSB'si
+  assign spi_miso_wire = (!spi_ss_wire[0]) ? spi_slv_shift[7] : 1'b0;
 
   // ════════════════════════════════════════════════
   // AXI Transaction Task'ları
@@ -448,28 +760,209 @@ module tb_soc_integration;
     $display("");
 
     // ──────────────────────────────────────────────
-    // TEST GRUBU 3: Stub Slave SLVERR Kontrolü
+    // TEST GRUBU 3: UART Register Erişimi + Stub SLVERR
     // UART=0x4000_0000, SPI=0x4000_0100, I2C=0x4000_0200
     // ──────────────────────────────────────────────
-    $display("── TEST GRUBU 3: Stub Slave SLVERR Kontrolü ──────");
+    $display("── TEST GRUBU 3: UART Register + Stub SLVERR ────");
 
-    // 3.1: UART adresine okuma → SLVERR + 0xDEAD_DEAD
-    axi_read (32'h4000_0000, 2'b10, rd_val);
-    check("UART stub read data", rd_val, 32'hDEAD_DEAD);
+    // 3.1: UART STATUS register başlangıç okuması
+    //   STATUS: [0]=tx_full, [1]=tx_empty, [2]=rx_full, [3]=rx_empty
+    //   Başlangıçta TX FIFO boş (tx_empty=1), RX FIFO boş (rx_empty=1)
+    //   Beklenen: bit[1]=1, bit[3]=1 → 0x0000_000A
+    axi_read (32'h4000_0008, 2'b10, rd_val);
+    check("UART STATUS initial", rd_val, 32'h0000_000A);
 
-    // 3.2: SPI adresine okuma → SLVERR
+    // 3.2: UART CTRL register — TX ve RX etkinleştir
+    axi_write(32'h4000_000C, 32'h0000_0003, 2'b10);  // tx_en=1, rx_en=1
+    axi_read (32'h4000_000C, 2'b10, rd_val);
+    check("UART CTRL tx+rx enable", rd_val, 32'h0000_0003);
+
+    // 3.3: UART BAUD_DIV register yazma & okuma
+    axi_write(32'h4000_0010, 32'h0000_0035, 2'b10);  // 53 = 115200 @ 100MHz
+    axi_read (32'h4000_0010, 2'b10, rd_val);
+    check("UART BAUD_DIV readback", rd_val, 32'h0000_0035);
+
+    // 3.4: UART TX — veri yazma (TXDATA register)
+    //   BAUD_DIV=0 → 16x tick her cycle → 10 bit * 16 tick = 160 cycle içinde loopback tamamlanır
+    //   Önce hızlı baud için divisor'u 0'a çek
+    axi_write(32'h4000_0010, 32'h0000_0000, 2'b10);  // BAUD_DIV=0
+    axi_write(32'h4000_0000, 32'h0000_0055, 2'b10);  // TXDATA = 0x55
+
+    // TX+RX loopback tamamlanmasını bekle (160+ cycle yeterli)
+    repeat (250) @(posedge clk);
+
+    // 3.5: UART RX — loopback verisi okunmalı
+    axi_read (32'h4000_0004, 2'b10, rd_val);
+    check("UART RX loopback data", rd_val[7:0], 8'h55);
+
+    // 3.6: SPI STATUS başlangıç okuması
+    //   STATUS: [0]=busy, [1]=rx_valid, [2]=ready
+    //   en=0 iken ready=0 (ready = idle && en)
+    axi_read (32'h4000_0108, 2'b10, rd_val);
+    check("SPI STATUS initial", rd_val, 32'h0000_0000);
+
+    $display("");
+
+    // ──────────────────────────────────────────────
+    // TEST GRUBU 3A: SPI Register Erişimi + Transfer
+    // SPI Base = 0x4000_0100
+    // ──────────────────────────────────────────────
+    $display("── TEST GRUBU 3A: SPI Register + Transfer ───────");
+
+    // 3A.1: SPI CTRL — enable + Mode 0 (cpol=0,cpha=0) + CS0 assert
+    //   CTRL: [0]=en, [1]=cpol, [2]=cpha, [3]=ie, [5:4]=cs_sel, [6]=cs_en
+    //   Değer: en=1, cpol=0, cpha=0, ie=0, cs_sel=0, cs_en=1 → 0x41
+    axi_write(32'h4000_010C, 32'h0000_0041, 2'b10);
+    axi_read (32'h4000_010C, 2'b10, rd_val);
+    check("SPI CTRL en+cs0", rd_val, 32'h0000_0041);
+
+    // 3A.2: STATUS — ready=1 olmalı (en=1, IDLE)
+    axi_read (32'h4000_0108, 2'b10, rd_val);
+    check("SPI STATUS ready after en", rd_val[2], 1'b1);
+
+    // 3A.3: CLK_DIV register yazma & okuma
+    axi_write(32'h4000_0110, 32'h0000_0031, 2'b10);  // CLK_DIV=49 → 1MHz
+    axi_read (32'h4000_0110, 2'b10, rd_val);
+    check("SPI CLK_DIV readback", rd_val, 32'h0000_0031);
+
+    // Simülasyon hızı için CLK_DIV=0'a geri çek
+    axi_write(32'h4000_0110, 32'h0000_0000, 2'b10);
+
+    // 3A.4: TXDATA register yazma & okuma
+    axi_write(32'h4000_0100, 32'h0000_00A5, 2'b10);  // TX=0xA5
     axi_read (32'h4000_0100, 2'b10, rd_val);
-    check("SPI stub read data", rd_val, 32'hDEAD_DEAD);
+    check("SPI TXDATA readback", rd_val[7:0], 8'hA5);
 
-    // 3.3: I2C adresine okuma → SLVERR
+    // 3A.5: SPI Transfer — MOSI→Slave shift register→MISO loopback
+    //   Slave başlangıç shift = 0xA5 (reset değeri)
+    //   Master TX = 0xA5 → slave MISO'dan MSB-first slave shift register çıkar
+    //   MISO'dan okunan: slave'in 0xA5 shift değeri
+    //   CLK_DIV=0 → half-period=1 clk → 8 bit = 16 clk SCK + overhead
+    axi_write(32'h4000_0100, 32'h0000_00A5, 2'b10);  // TXDATA = 0xA5
+    axi_write(32'h4000_0114, 32'h0000_0001, 2'b10);  // CMD start=1
+
+    // Transfer tamamlanmasını bekle
+    repeat (100) @(posedge clk);
+
+    // 3A.6: STATUS — rx_valid=1 olmalı
+    axi_read (32'h4000_0108, 2'b10, rd_val);
+    check("SPI STATUS rx_valid after xfer", rd_val[1], 1'b1);
+
+    // 3A.7: RXDATA — slave'den gelen veri
+    axi_read (32'h4000_0104, 2'b10, rd_val);
+    $display("[%0t] INFO: SPI RXDATA = 0x%02h", $time, rd_val[7:0]);
+
+    // 3A.8: İkinci transfer — farklı veri
+    //   STATUS'a yaz → rx_valid temizle
+    axi_write(32'h4000_0108, 32'h0000_0000, 2'b10);  // rx_valid clear
+
+    axi_write(32'h4000_0100, 32'h0000_0055, 2'b10);  // TXDATA = 0x55
+    axi_write(32'h4000_0114, 32'h0000_0001, 2'b10);  // CMD start
+
+    repeat (100) @(posedge clk);
+
+    // 3A.9: rx_valid = 1 tekrar
+    axi_read (32'h4000_0108, 2'b10, rd_val);
+    check("SPI STATUS rx_valid 2nd xfer", rd_val[1], 1'b1);
+
+    // 3A.10: RXDATA okuma
+    axi_read (32'h4000_0104, 2'b10, rd_val);
+    $display("[%0t] INFO: SPI RXDATA 2nd = 0x%02h", $time, rd_val[7:0]);
+
+    // 3A.11: CS deassert — CTRL cs_en=0
+    axi_write(32'h4000_010C, 32'h0000_0001, 2'b10);  // en=1, cs_en=0
+    axi_read (32'h4000_010C, 2'b10, rd_val);
+    check("SPI CTRL cs_deassert", rd_val[6], 1'b0);
+
+    $display("");
+
+    // ──────────────────────────────────────────────
+    // TEST GRUBU 3B: I2C Register Erişimi
+    // I2C Base = 0x4000_0200
+    // ──────────────────────────────────────────────
+    $display("── TEST GRUBU 3B: I2C Register Erişimi ──────────");
+
+    // 3.7: I2C STATUS başlangıç okuması
+    //   STATUS: [0]=busy, [1]=ack_err, [2]=rx_valid, [3]=cmd_ready
+    //   Başlangıçta: busy=0, ack_err=0, rx_valid=0, cmd_ready=1 (IDLE ve en=0 ama bakalım)
+    //   NOT: en_i=0 olduğu için cmd_ready_o = 0 (cmd_ready = idle && en)
+    axi_read (32'h4000_0208, 2'b10, rd_val);
+    check("I2C STATUS initial", rd_val, 32'h0000_0000);
+
+    // 3.8: I2C CTRL register — enable
+    axi_write(32'h4000_020C, 32'h0000_0001, 2'b10);  // en=1
+    axi_read (32'h4000_020C, 2'b10, rd_val);
+    check("I2C CTRL enable set", rd_val, 32'h0000_0001);
+
+    // 3.9: STATUS tekrar — en=1 ise cmd_ready=1 olmalı
+    axi_read (32'h4000_0208, 2'b10, rd_val);
+    check("I2C STATUS cmd_ready after en", rd_val[3], 1'b1);
+
+    // 3.10: I2C PRESCALE register yazma & okuma
+    axi_write(32'h4000_0210, 32'h0000_003E, 2'b10);  // 62 → 400kHz @ 100MHz
+    axi_read (32'h4000_0210, 2'b10, rd_val);
+    check("I2C PRESCALE readback", rd_val, 32'h0000_003E);
+
+    // 3.11: PRESCALE'i test için düşük tut (default=1, geri yükle)
+    axi_write(32'h4000_0210, 32'h0000_0001, 2'b10);
+
+    // 3.12: I2C TXDATA register yazma & okuma
+    axi_write(32'h4000_0200, 32'h0000_00A0, 2'b10);  // slave addr 0x50 << 1 = 0xA0 (write)
     axi_read (32'h4000_0200, 2'b10, rd_val);
-    check("I2C stub read data", rd_val, 32'hDEAD_DEAD);
+    check("I2C TXDATA readback", rd_val[7:0], 8'hA0);
 
-    // 3.4: UART'a yazma (SLVERR ama transaction tamamlanmalı)
-    axi_write(32'h4000_0000, 32'hAAAA_BBBB, 2'b10);
-    $display("[%0t] PASS: UART stub write completed (SLVERR expected)", $time);
-    pass_cnt++;
-    test_num++;
+    $display("");
+
+    // ──────────────────────────────────────────────
+    // TEST GRUBU 3C: I2C İşlem Testi (START + WRITE + STOP)
+    // Slave adresi = 0x50, yazma işlemi, veri = 0x5A
+    // TB'deki basit slave modeli ACK verecek
+    // ──────────────────────────────────────────────
+    $display("── TEST GRUBU 3C: I2C Transaction ───────────────");
+
+    // TXDATA = slave addr byte (0x50<<1 | 0 = 0xA0 = write)
+    axi_write(32'h4000_0200, 32'h0000_00A0, 2'b10);
+
+    // CMD = START (001)
+    axi_write(32'h4000_0214, 32'h0000_0001, 2'b10);
+
+    // cmd_ready bekle
+    repeat (200) @(posedge clk);
+    axi_read (32'h4000_0208, 2'b10, rd_val);
+    $display("[%0t] INFO: I2C STATUS after START = 0x%08h", $time, rd_val);
+
+    // CMD = WRITE_BYTE (010) — adres byte gönder
+    axi_write(32'h4000_0214, 32'h0000_0002, 2'b10);
+
+    // Yazma + ACK tamamlanmasını bekle (8 bit + 1 ACK = 9*SCL period)
+    // SCL period = 4*(1+1) = 8 clk, 9*8 = 72 clk + margin
+    repeat (200) @(posedge clk);
+
+    // 3.13: ACK hatası olmamalı — slave 0x50 adresi tanıyor
+    axi_read (32'h4000_0208, 2'b10, rd_val);
+    check("I2C addr write no ACK err", rd_val[1], 1'b0);
+
+    // TXDATA = veri byte (0x5A)
+    axi_write(32'h4000_0200, 32'h0000_005A, 2'b10);
+
+    // CMD = WRITE_BYTE (010) — veri byte gönder
+    axi_write(32'h4000_0214, 32'h0000_0002, 2'b10);
+    repeat (200) @(posedge clk);
+
+    // 3.14: Veri yazma ACK hatası yok
+    axi_read (32'h4000_0208, 2'b10, rd_val);
+    check("I2C data write no ACK err", rd_val[1], 1'b0);
+
+    // CMD = STOP (101)
+    axi_write(32'h4000_0214, 32'h0000_0005, 2'b10);
+    repeat (200) @(posedge clk);
+
+    // 3.15: I2C busy=0 olmalı (STOP tamamlandı)
+    axi_read (32'h4000_0208, 2'b10, rd_val);
+    check("I2C idle after STOP", rd_val[0], 1'b0);
+
+    // 3.16: Slave'in belleğinde yazılan veri doğru mu? (0x5A)
+    check("I2C slave mem[0] = 0x5A", {24'd0, slv_mem[0]}, 32'h0000_005A);
 
     $display("");
 
@@ -535,8 +1028,8 @@ module tb_soc_integration;
   // Watchdog timer
   // ════════════════════════════════════════════════
   initial begin
-    #100_000;
-    $fatal(1, "[WATCHDOG] Zaman asimi — test 100us icinde bitmedi!");
+    #200_000;
+    $fatal(1, "[WATCHDOG] Zaman asimi — test 200us icinde bitmedi!");
   end
   // ════════════════════════════════════════════════
   // Debug: Master IF + DMEM Slave state monitor
