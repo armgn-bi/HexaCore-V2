@@ -1,0 +1,301 @@
+// imem_soc_sys.mem — Kapsamlı SoC Sistem Testi Programı
+// Core → AXI → Tüm Periferaller (DMEM, UART, SPI, I2C, DSP)
+// 112 talimat, 22 doğrulama noktası (x10–x31)
+//
+// Fazlar:
+//   1. İç DMEM çoklu pattern yazma/okuma                     (x10,x11,x12)
+//   2. AXI DMEM çoklu pattern + kalıcılık                    (x13,x14,x15,x16)
+//   3. UART config + TX/RX loopback                          (x17,x18,x19)
+//   4. SPI Mode0 transfer + slave BFM                        (x20,x21,x22)
+//   5. I2C START+WRITE(addr)+WRITE(data)+STOP polling loops  (x23,x24,x25)
+//   6. DSP register erişimi                                   (x26,x27)
+//   7. Cross-peripheral veri taşıma (periph→DMEM→readback)   (x28,x29)
+//   8. Hızlı periferal geçişleri + final kalıcılık           (x30,x31)
+//
+// Adres haritası:
+//   İç DMEM   : 0x8000_0000
+//   AXI DMEM  : 0x8001_0000
+//   UART      : 0x4000_0000  (TXDATA+0, RXDATA+4, STATUS+8, CTRL+C, BAUD+10)
+//   SPI       : 0x4000_0100  (TXDATA+0, RXDATA+4, STATUS+8, CTRL+C, CLKDIV+10, CMD+14)
+//   I2C       : 0x4000_0200  (TXDATA+0, RXDATA+4, STATUS+8, CTRL+C, PRESCALE+10, CMD+14)
+//   DSP       : 0x4000_1000  (CTRL+0, STATUS+4, DATA_IN+8, OUT_L+C, OUT_H+10)
+
+// ============================================================
+// FAZ 1: İç DMEM Çoklu Pattern (x10, x11, x12)
+// ============================================================
+// 0x00: lui  x5, 0x80000        ; x5 = 0x8000_0000
+800002B7
+// 0x04: lui  x6, 0xDEADC        ; x6 = 0xDEADC000
+DEADC337
+// 0x08: addi x6, x6, 0xEEF      ; x6 = 0xDEADBEEF  (-273 = 0xEEF)
+EEF30313
+// 0x0C: sw   x6, 0x100(x5)      ; DMEM[0x100] = 0xDEADBEEF
+1062A023
+// 0x10: lw   x10, 0x100(x5)     ; x10 = 0xDEADBEEF
+1002A503
+// 0x14: lui  x6, 0x12345        ; x6 = 0x12345000
+12345337
+// 0x18: addi x6, x6, 0x678      ; x6 = 0x12345678
+67830313
+// 0x1C: sw   x6, 0x104(x5)      ; DMEM[0x104] = 0x12345678
+1062A223
+// 0x20: lw   x11, 0x104(x5)     ; x11 = 0x12345678
+1042A583
+// 0x24: lw   x12, 0x100(x5)     ; x12 = 0xDEADBEEF (kalıcılık)
+1002A603
+
+// ============================================================
+// FAZ 2: AXI DMEM Çoklu Pattern (x13, x14, x15, x16)
+// ============================================================
+// 0x28: lui  x5, 0x80010        ; x5 = 0x8001_0000
+800102B7
+// 0x2C: lui  x6, 0xCAFEC        ; x6 = 0xCAFEC000
+CAFEC337
+// 0x30: addi x6, x6, 0xABE      ; x6 = 0xCAFEBABE  (-1346 = 0xABE)
+ABE30313
+// 0x34: sw   x6, 0(x5)          ; AXI_DMEM[0] = 0xCAFEBABE
+0062A023
+// 0x38: lw   x13, 0(x5)         ; x13 = 0xCAFEBABE
+0002A683
+// 0x3C: lui  x6, 0xA5A5A        ; x6 = 0xA5A5A000
+A5A5A337
+// 0x40: addi x6, x6, 0x5A5      ; x6 = 0xA5A5A5A5
+5A530313
+// 0x44: sw   x6, 4(x5)          ; AXI_DMEM[4] = 0xA5A5A5A5
+0062A223
+// 0x48: lw   x14, 4(x5)         ; x14 = 0xA5A5A5A5
+0042A703
+// 0x4C: addi x6, x0, 0x55       ; x6 = 0x55
+05500313
+// 0x50: sw   x6, 8(x5)          ; AXI_DMEM[8] = 0x55
+0062A423
+// 0x54: lw   x15, 8(x5)         ; x15 = 0x55
+0082A783
+// 0x58: lw   x16, 0(x5)         ; x16 = 0xCAFEBABE (kalıcılık)
+0002A803
+
+// ============================================================
+// FAZ 3: UART Config + TX + Loopback RX (x17, x18, x19)
+// ============================================================
+// 0x5C: lui  x5, 0x40000        ; x5 = 0x4000_0000 (UART base)
+400002B7
+// 0x60: lw   x17, 8(x5)         ; x17 = UART_STATUS (reset=0x0A)
+0082A883
+// 0x64: sw   x0, 0x10(x5)       ; BAUD_DIV = 0 (en hızlı)
+0002A823
+// 0x68: addi x6, x0, 3          ; x6 = 3 (tx_en=1, rx_en=1)
+00300313
+// 0x6C: sw   x6, 0x0C(x5)       ; UART_CTRL = 0x03
+0062A623
+// 0x70: addi x6, x0, 0x55       ; x6 = 0x55
+05500313
+// 0x74: sw   x6, 0(x5)          ; TXDATA = 0x55
+0062A023
+// Gecikme döngüsü: TX→RX loopback bekleme (~320 cycle)
+// 0x78: addi x9, x0, 80         ; sayaç = 80
+05000493
+// delay_uart (0x7C):
+// 0x7C: addi x9, x9, -1
+FFF48493
+// 0x80: bne  x9, x0, -4         ; sayaç>0 → 0x7C
+FE049EE3
+// 0x84: lw   x18, 4(x5)         ; x18 = UART_RXDATA = 0x55
+0042A903
+// 0x88: lw   x19, 8(x5)         ; x19 = UART_STATUS = 0x0A (temiz)
+0082A983
+
+// ============================================================
+// FAZ 4: SPI Mode0 Transfer (x20, x21, x22)
+// NOT: CLK_DIV=1 kullanılır — 2-FF MISO senkronizörüne zaman tanır
+// ============================================================
+// 0x8C: lui  x5, 0x40000        ; x5 = 0x4000_0000
+400002B7
+// 0x90: addi x5, x5, 0x100      ; x5 = 0x4000_0100 (SPI base)
+10028293
+// 0x94: addi x6, x0, 2          ; x6 = 2
+00200313
+// 0x98: sw   x6, 0x10(x5)       ; CLK_DIV = 2 (2-FF sync uyumlu, half-period=3 clk)
+0062A823
+// 0x9C: addi x6, x0, 0x41       ; x6 = 0x41 (en=1, cs_en=1, mode0)
+04100313
+// 0xA0: sw   x6, 0x0C(x5)       ; SPI_CTRL = 0x41
+0062A623
+// 0xA4: addi x6, x0, 0xA5       ; x6 = 0xA5 (gönderilecek veri)
+0A500313
+// 0xA8: sw   x6, 0(x5)          ; SPI_TXDATA = 0xA5
+0062A023
+// 0xAC: addi x6, x0, 1          ; x6 = 1 (transfer başlat)
+00100313
+// 0xB0: sw   x6, 0x14(x5)       ; SPI_CMD = 1
+0062AA23
+// Gecikme döngüsü: SPI transfer bekleme (CLK_DIV=1 → ~32 clk)
+// 0xB4: addi x9, x0, 20         ; sayaç = 20
+01400493
+// delay_spi (0xB8):
+// 0xB8: addi x9, x9, -1
+FFF48493
+// 0xBC: bne  x9, x0, -4         ; sayaç>0 → 0xB8
+FE049EE3
+// 0xC0: lw   x20, 8(x5)         ; x20 = SPI_STATUS (ready+rx_valid=0x06)
+0082AA03
+// 0xC4: lw   x21, 4(x5)         ; x21 = SPI_RXDATA = 0x5A (slave echo)
+0042AA83
+// 0xC8: lw   x22, 0x0C(x5)      ; x22 = SPI_CTRL = 0x41 (config persist)
+00C2AB03
+
+// ============================================================
+// FAZ 5: I2C START+WRITE(addr)+WRITE(data)+STOP (x23, x24, x25)
+// ============================================================
+// 0xCC: lui  x5, 0x40000        ; x5 = 0x4000_0000
+400002B7
+// 0xD0: addi x5, x5, 0x200      ; x5 = 0x4000_0200 (I2C base)
+20028293
+// 0xD4: addi x6, x0, 1          ; x6 = 1
+00100313
+// 0xD8: sw   x6, 0x10(x5)       ; I2C_PRESCALE = 1
+0062A823
+// 0xDC: sw   x6, 0x0C(x5)       ; I2C_CTRL = 1 (enable)
+0062A623
+// Kısa gecikme — enable stabilize olsun
+// 0xE0: addi x9, x0, 5          ; sayaç = 5
+00500493
+// delay_i2c_en (0xE4):
+// 0xE4: addi x9, x9, -1
+FFF48493
+// 0xE8: bne  x9, x0, -4         ; sayaç>0 → 0xE4
+FE049EE3
+// 0xEC: lw   x23, 8(x5)         ; x23 = I2C_STATUS (cmd_ready=0x08)
+0082AB83
+// --- I2C Transaction: START ---
+// 0xF0: addi x6, x0, 0xA0       ; TXDATA = 0xA0 (slave 0x50 write)
+0A000313
+// 0xF4: sw   x6, 0(x5)          ; I2C_TXDATA = 0xA0
+0062A023
+// 0xF8: addi x6, x0, 1          ; CMD_START = 1
+00100313
+// 0xFC: sw   x6, 0x14(x5)       ; I2C_CMD = START
+0062AA23
+// poll_start (0x100): STATUS[3] cmd_ready polling
+// 0x100: lw   x8, 8(x5)          ; x8 = STATUS
+0082A403
+// 0x104: andi x8, x8, 0x08      ; mask cmd_ready
+00847413
+// 0x108: beq  x8, x0, -8        ; cmd_ready=0 → 0x100
+FE040CE3
+// --- I2C Transaction: WRITE (slave addr byte) ---
+// 0x10C: addi x6, x0, 2         ; CMD_WRITE = 2
+00200313
+// 0x110: sw   x6, 0x14(x5)      ; I2C_CMD = WRITE
+0062AA23
+// poll_write1 (0x114):
+// 0x114: lw   x8, 8(x5)
+0082A403
+// 0x118: andi x8, x8, 0x08
+00847413
+// 0x11C: beq  x8, x0, -8        ; → 0x114
+FE040CE3
+// --- I2C Transaction: WRITE (data byte 0xBB) ---
+// 0x120: addi x6, x0, 0xBB      ; data = 0xBB
+0BB00313
+// 0x124: sw   x6, 0(x5)         ; I2C_TXDATA = 0xBB
+0062A023
+// 0x128: addi x6, x0, 2         ; CMD_WRITE = 2
+00200313
+// 0x12C: sw   x6, 0x14(x5)      ; I2C_CMD = WRITE
+0062AA23
+// poll_write2 (0x130):
+// 0x130: lw   x8, 8(x5)
+0082A403
+// 0x134: andi x8, x8, 0x08
+00847413
+// 0x138: beq  x8, x0, -8        ; → 0x130
+FE040CE3
+// --- I2C Transaction: STOP ---
+// 0x13C: addi x6, x0, 5         ; CMD_STOP = 5
+00500313
+// 0x140: sw   x6, 0x14(x5)      ; I2C_CMD = STOP
+0062AA23
+// poll_stop (0x144):
+// 0x144: lw   x8, 8(x5)
+0082A403
+// 0x148: andi x8, x8, 0x08
+00847413
+// 0x14C: beq  x8, x0, -8        ; → 0x144
+FE040CE3
+// 0x150: lw   x24, 8(x5)        ; x24 = STATUS (cmd_ready=0x08, ack_err=0)
+0082AC03
+// 0x154: andi x25, x24, 2        ; x25 = ack_err bit = 0
+002C7C93
+
+// ============================================================
+// FAZ 6: DSP Register Erişimi (x26, x27)
+// ============================================================
+// 0x158: lui  x5, 0x40001        ; x5 = 0x4000_1000 (DSP base)
+400012B7
+// 0x15C: addi x6, x0, 1          ; x6 = 1 (enable)
+00100313
+// 0x160: sw   x6, 0(x5)          ; DSP_CTRL = enable
+0062A023
+// 0x164: lw   x26, 0(x5)         ; x26 = DSP_CTRL = 0x01
+0002AD03
+// 0x168: lui  x6, 1              ; x6 = 0x1000
+00001337
+// 0x16C: addi x6, x6, 0x234      ; x6 = 0x1234
+23430313
+// 0x170: sw   x6, 8(x5)          ; DSP_DATA_IN = 0x1234
+0062A423
+// 0x174: lw   x27, 8(x5)         ; x27 = DSP_DATA_IN = 0x1234
+0082AD83
+
+// ============================================================
+// FAZ 7: Cross-Peripheral Veri Taşıma (x28, x29)
+// ============================================================
+// UART STATUS → AXI DMEM → okuma
+// 0x178: lui  x5, 0x40000        ; UART base
+400002B7
+// 0x17C: lw   x7, 8(x5)          ; x7 = UART_STATUS
+0082A383
+// 0x180: lui  x5, 0x80010        ; AXI DMEM base
+800102B7
+// 0x184: sw   x7, 0x10(x5)       ; AXI_DMEM[0x10] = UART_STATUS
+0072A823
+// 0x188: lw   x28, 0x10(x5)      ; x28 = 0x0A (UART STATUS'tan)
+0102AE03
+// I2C STATUS → AXI DMEM → okuma
+// 0x18C: lui  x5, 0x40000
+400002B7
+// 0x190: addi x5, x5, 0x200      ; I2C base
+20028293
+// 0x194: lw   x7, 8(x5)          ; x7 = I2C_STATUS
+0082A383
+// 0x198: lui  x5, 0x80010        ; AXI DMEM base
+800102B7
+// 0x19C: sw   x7, 0x14(x5)       ; AXI_DMEM[0x14] = I2C_STATUS
+0072AA23
+// 0x1A0: lw   x29, 0x14(x5)      ; x29 = 0x08 (I2C STATUS'tan)
+0142AE83
+
+// ============================================================
+// FAZ 8: Hızlı Periferal Geçişi + Final Kalıcılık (x30, x31)
+// ============================================================
+// AXI DMEM yazma → SPI STATUS oku → AXI DMEM geri oku
+// 0x1A4: lui  x5, 0x80010        ; AXI DMEM base
+800102B7
+// 0x1A8: addi x6, x0, 0x77       ; x6 = 0x77
+07700313
+// 0x1AC: sw   x6, 0x18(x5)       ; AXI_DMEM[0x18] = 0x77
+0062AC23
+// 0x1B0: lui  x7, 0x40000        ; periferal base
+400003B7
+// 0x1B4: lw   x8, 0x108(x7)      ; SPI_STATUS (0x40000108) — araya giren erişim
+1083A403
+// 0x1B8: lw   x30, 0x18(x5)      ; x30 = AXI_DMEM[0x18] = 0x77
+0182AF03
+// 0x1BC: lw   x31, 0(x5)         ; x31 = AXI_DMEM[0] = 0xCAFEBABE (Faz 2 kalıcılık)
+0002AF83
+
+// ============================================================
+// FAZ 9: HALT — Sonsuz döngü
+// ============================================================
+// 0x1C0: jal  x0, 0              ; j . (PC = 0x8000_01C0)
+0000006F

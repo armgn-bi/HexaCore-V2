@@ -1,12 +1,16 @@
-# RISC-V SoC Proje Durumu (Son güncelleme: 2026-03-07)
+# RISC-V SoC Proje Durumu (Son güncelleme: 2026-03-08)
 
 ## Genel Durum
 RV32I 5-aşamalı pipeline RISC-V çekirdeği + AXI4-Lite bus altyapısı + periferaller.
 Pipeline artık dahili DMEM ve AXI üzerinden tüm periferal erişimini destekliyor.
 XSIM simülasyon altyapısı hazır.
+- **Kapsamlı SoC sistem testi (Core→AXI→tüm periferaller): 23/23 PASS**
 - **Full SoC entegrasyon testi (pipeline→AXI→periferaller): 9/9 PASS**
 - **SoC entegrasyon testleri (AXI doğrudan): 40/40 PASS**
 - **Core regresyon testleri: 2111/2111 PASS**
+- **UART fonksiyon testi: 68/68 PASS**
+- **SPI fonksiyon testi: 54/54 PASS**
+- **I2C fonksiyon testi: 52/52 PASS**
 
 ## Tamamlanan İşler
 
@@ -75,6 +79,14 @@ XSIM simülasyon altyapısı hazır.
 - `gen_lsu_golden.ps1` — LSU golden log üretme scripti
 - `Makefile` — GNU Make akışı (soc_test target dahil)
 - `filelist_core.f`, `filelist_dsp_verilog.f`, `filelist_tb.f`, `filelist_tb_soc.f`, `filelist_tb_soc_full.f`
+- `filelist_uart_rtl.f`, `filelist_tb_uart.f` — UART fonksiyon testi
+- `filelist_spi_rtl.f`, `filelist_tb_spi.f` — SPI fonksiyon testi
+- `run_spi_test.ps1` — SPI fonksiyon testi runner (54/54 PASS)
+- `run_uart_test.ps1` — UART fonksiyon testi runner (68/68 PASS)
+- `run_i2c_test.ps1` — I2C fonksiyon testi runner (52/52 PASS)
+- `filelist_i2c_rtl.f`, `filelist_tb_i2c.f` — I2C fonksiyon testi
+- `run_soc_sys_test.ps1` — Kapsamlı SoC sistem testi runner (23/23 PASS)
+- `filelist_tb_soc_sys.f` — Kapsamlı SoC sistem testi filelist
 - `xsim_run.tcl`, `xsim_run_wdb.tcl`
 - `.vscode/tasks.json` — 8 VS Code task (Compile/Elaborate/Sim/Full/Check/SoC Test/Wave/Clean)
 - Vivado 2025.2 yolu: `C:\AMDDesignTools\2025.2\Vivado\bin`
@@ -105,6 +117,28 @@ XSIM simülasyon altyapısı hazır.
 - Register doğrulama: hierarchical access ile register_file değerleri kontrol edilir
 - **9/9 PASS** — 69 cycle'da tamamlanır (875ns @100MHz)
 - Runner: sim/run_soc_full_test.ps1, filelist: sim/filelist_tb_soc_full.f
+
+### 14. Kapsamlı SoC Sistem Testi (tb/soc_tb/tb_soc_system.sv)
+- **Pipeline → AXI → TÜM periferaller gerçek fonksiyonel test** — UART loopback, SPI transfer, I2C transaction
+- Hand-encoded RISC-V test programı (tb/imem_soc_sys.mem, 113 talimat, 22+1 doğrulama)
+- 8 test fazı + bonus:
+  1. İç DMEM çoklu pattern (0xDEADBEEF, 0x12345678) + kalıcılık → x10,x11,x12
+  2. AXI DMEM çoklu pattern (0xCAFEBABE, 0xA5A5A5A5, 0x55) + kalıcılık → x13,x14,x15,x16
+  3. UART TX→RX loopback: BAUD_DIV=0, CTRL=tx+rx_en, TXDATA=0x55, delay loop, RXDATA readback → x17,x18,x19
+  4. SPI Mode0 full-duplex: CLK_DIV=2, slave BFM(init=0x5A), TXDATA=0xA5, CMD=start, RXDATA=0x5A → x20,x21,x22
+  5. I2C write transaction: PRESCALE=1, START+WRITE(0xA0)+WRITE(0xBB)+STOP, polling loops, ack_err=0 → x23,x24,x25
+  6. DSP CTRL enable + DATA_IN=0x1234 readback → x26,x27
+  7. Cross-peripheral: UART STATUS→AXI_DMEM→readback, I2C STATUS→AXI_DMEM→readback → x28,x29
+  8. Hızlı periferal geçişi: AXI_DMEM write → SPI STATUS read → AXI_DMEM readback → x30,x31
+  Bonus: I2C slave internal memory doğrulaması (mem[0]=0xBB)
+- BFM'ler:
+  - UART: Combinational loopback (uart_tx_o → uart_rx_i)
+  - SPI: Mode 0 slave shift register (init=0x5A), negedge SCK shift, posedge SCK sample
+  - I2C: 8-state FSM slave (addr=0x50), open-drain SDA, START/STOP detect, ACK, 4-byte memory
+- Polling loops: I2C cmd_ready polling (BEQ+LW+ANDI), firmware delay loops (BNE counter)
+- **23/23 PASS** — 882 cycle'da tamamlanır (~9μs @100MHz)
+- Runner: sim/run_soc_sys_test.ps1, filelist: sim/filelist_tb_soc_sys.f
+- **Not:** SPI CLK_DIV=2 kullanılır — 2-FF MISO senkronizörüne 3 clock marj tanır (CLK_DIV<2'de sync gecikmesi veri hatasına yol açar)
 
 ### 9. Golden Log Dosyaları (tb/)
 - `base_test.golden_clean.log.txt` ✅
@@ -141,6 +175,11 @@ XSIM simülasyon altyapısı hazır.
 ### axi_uart.sv rx_data implicit declaration (ÇÖZÜLDÜ)
 - `rx_data` sinyali RX FIFO instance'ından önce kullanılıp sonra tanımlanıyordu → XSIM implicit declaration uyarısı. Tanım FIFO'dan önce taşındı.
 
+### i2c_master.sv rx_data_o shift hatası (ÇÖZÜLDÜ)
+- **Problem:** `S_READ_BIT` state'inde, phase 10'da `shift_q <= {shift_q[6:0], sda_sync2}` ile 8 bit toplanıyor. Ardından phase 11'de `rx_data_o <= {shift_q[6:0], sda_sync2}` yapılıyordu. Ancak NBA semantiği nedeniyle `shift_q` zaten 8 bit'in tamamını içeriyor → MSB düşürülüp aynı bit tekrar ekleniyor.
+- **Örnek:** 0xA1 (10100001) → `{shift_q[6:0], sda_sync2}` = 01000011 = 0x43
+- **RTL Fix:** `rx_data_o <= shift_q;` — shift register'daki tam 8 bit doğrudan kullanıldı.
+
 ## Adres Haritası
 | Bölge      | Başlangıç    | Bitiş        | Boyut | Durum              |
 |------------|-------------|-------------|-------|--------------------|
@@ -162,8 +201,75 @@ XSIM simülasyon altyapısı hazır.
 3. ~~**SPI Master (rtl/spi/):**~~ ✅ Tamamlandı — CPOL/CPHA, clock divider, multi-slave CS, 40/40 SoC test
 4. ~~**I2C Master (rtl/i2c/):**~~ ✅ Tamamlandı
 
+### 11. UART Fonksiyon Testi (tb/periph_tb/tb_uart.sv)
+- axi_uart modülünü doğrudan AXI4-Lite sinyalleriyle sürer (pipeline/interconnect bypass)
+- Loopback modu (tx_o→rx_i) + davranışsal UART TX BFM + RX bit-level monitor
+- 12 test grubu, 68 test:
+  1. Reset değerleri (STATUS=0x0A, CTRL=0, BAUD_DIV=0)
+  2. Register R/W (CTRL tüm bitler, BAUD_DIV, TXDATA write-only)
+  3. Tek byte TX→RX loopback (0x55, 0xAA, 0xA5)
+  4. Data pattern loopback (0x00, 0xFF, 0x01, 0x80, 0x5A, 0x42, 0xDE, 0x7E)
+  5. Çoklu byte ardışık loopback (4 byte FIFO sıralaması)
+  6. TX FIFO bayrakları (tx_full, tx_empty, 16-byte dolum+boşaltma, RX FIFO sıralı doğrulama)
+  7. Interrupt doğrulama (tx_ie, rx_ie, enable/disable)
+  8. Frame hatası enjeksiyonu (BFM: bozuk stop bit → sticky flag + clear)
+  9. Overrun hatası (BFM: 16+1 byte → overrun flag + clear)
+  10. Farklı baud rate (BAUD_DIV=1, BAUD_DIV=2)
+  11. TX/RX enable kontrolü (devre dışı/etkin geçiş)
+  12. Bit-seviyeli TX doğrulama (RX monitor ile)
+- **68/68 PASS** — ~24.5us simülasyon süresi
+- Runner: sim/run_uart_test.ps1
+- Filelist: sim/filelist_uart_rtl.f, sim/filelist_tb_uart.f
+
 ### Orta Öncelik
-5. **Periferal testbench'leri:** `tb/periph_tb/tb_uart.sv`, `tb_spi.sv`, `tb_i2c.sv`
+### 12. SPI Fonksiyon Testi (tb/periph_tb/tb_spi.sv)
+- axi_spi modülünü doğrudan AXI4-Lite sinyalleriyle sürer (pipeline/interconnect bypass)
+- 4-slave SPI Slave BFM ile full-duplex transfer testi (tüm SPI modları)
+- 14 test grubu, 54 test:
+  1. Reset değerleri (STATUS=0x00, CTRL=0, CLK_DIV=0, CMD=0)
+  2. Register R/W (CTRL tüm bitler, CLK_DIV, TXDATA readback)
+  3. Mode 0 (CPOL=0,CPHA=0) tek byte transfer
+  4. Data pattern Mode 0 (0x00, 0xFF, 0x01, 0x80, 0x5A, 0x42, 0xDE, 0x7E)
+  5. Mode 1 (CPOL=0,CPHA=1) transfer
+  6. Mode 2 (CPOL=1,CPHA=0) transfer
+  7. Mode 3 (CPOL=1,CPHA=1) transfer
+  8. Çoklu byte ardışık transfer (CS tutulu, 4 byte)
+  9. rx_valid bayrağı + STATUS temizleme (sticky davranış)
+  10. Interrupt doğrulama (ie & rx_valid)
+  11. Chip select kontrol (CS0–CS3 assert/deassert)
+  12. Farklı CLK_DIV (1, 3)
+  13. Enable kontrolü (ready, CS durumu)
+  14. Busy bayrağı doğrulama (transfer sırasında/sonrasında)
+- **54/54 PASS** — ~2.9us simülasyon süresi
+- Runner: sim/run_spi_test.ps1
+- Filelist: sim/filelist_spi_rtl.f, sim/filelist_tb_spi.f
+
+### 13. I2C Fonksiyon Testi (tb/periph_tb/tb_i2c.sv)
+- axi_i2c modülünü doğrudan AXI4-Lite sinyalleriyle sürer (pipeline/interconnect bypass)
+- Davranışsal I2C Slave BFM (7-bit addr=0x50, 8-byte internal memory, open-drain modelleme)
+- 14 test grubu, 52 test:
+  1. Reset değerleri (TXDATA=0, RXDATA=0, STATUS=0, CTRL=0, PRESCALE=DEFAULT)
+  2. Register R/W (TXDATA, CTRL, PRESCALE, CMD, STATUS cmd_ready, RXDATA read-only)
+  3. I2C Write tek byte (slave bellek doğrulama, ack_err kontrolü)
+  4. I2C Write çoklu byte (3 byte ardışık yazma)
+  5. I2C Read tek byte (slave→master veri transferi)
+  6. I2C Read çoklu byte (3 byte ardışık okuma, byte-boundary timing)
+  7. Data pattern (0x00, 0xFF, 0x55, 0xAA)
+  8. ACK error (yanlış adres → ack_err sticky flag)
+  9. Sticky ack_err + DUT reset clear (wrapper'daki sticky flag sadece reset ile temizlenir)
+  10. rx_valid flag + RXDATA okuma ile temizleme
+  11. Interrupt doğrulama (ie & cmd_ready, ie & ack_err)
+  12. PRESCALE değişiklikleri (2, 3)
+  13. Enable kontrolü (devre dışı/etkin geçiş)
+  14. Busy/cmd_ready bayrakları
+- Slave BFM: 11 state FSM (IDLE, ADDR_BIT, ADDR_ACK1/2, WR_BIT, WR_ACK1/2, RD_BIT, RD_RELEASE, RD_ACK_WAIT, RD_NEXT_PREP, STOP_WAIT)
+- **52/52 PASS** — ~9.9μs simülasyon süresi
+- Runner: sim/run_i2c_test.ps1
+- Filelist: sim/filelist_i2c_rtl.f, sim/filelist_tb_i2c.f
+- **Not:** Test sırasında i2c_master.sv'de rx_data_o shift hatası bulunup düzeltildi (bkz. Bugfix Geçmişi)
+
+### Orta Öncelik
+5. **Periferal testbench'leri:** ~~`tb/periph_tb/tb_uart.sv`~~✅ ~~`tb_spi.sv`~~✅ ~~`tb_i2c.sv`~~✅
 6. **RISC-V firmware (sw/):** `startup.S`, `linker.ld`, `main.c`, `Makefile`
 7. **FPGA constraints:** `constraints/pins.xdc`
 

@@ -271,7 +271,8 @@ module i2c_master (
             scl_oe_o <= 1'b1;  // drive SCL low
             if (bit_cnt_q == 3'd0) begin
               // 8 bit okundu → ACK/NACK gönder
-              rx_data_o  <= {shift_q[6:0], sda_sync2};
+              // shift_q faz 10'da zaten 8 bit ile dolduruldu
+              rx_data_o  <= shift_q;
               state_q    <= S_READ_SEND;
             end else begin
               bit_cnt_q <= bit_cnt_q - 3'd1;
