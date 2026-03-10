@@ -6,10 +6,10 @@ Pipeline artık dahili DMEM ve AXI üzerinden tüm periferal erişimini destekli
 XSIM simülasyon altyapısı hazır.
 - **Kapsamlı SoC sistem testi (Core→AXI→tüm periferaller): 23/23 PASS**
 - **Full SoC entegrasyon testi (pipeline→AXI→periferaller): 9/9 PASS**
-- **SoC entegrasyon testleri (AXI doğrudan): 40/40 PASS**
+- **SoC entegrasyon testleri (AXI doğrudan): 46/46 PASS**
 - **Core regresyon testleri: 2111/2111 PASS**
 - **UART fonksiyon testi: 68/68 PASS**
-- **SPI fonksiyon testi: 54/54 PASS**
+- **SPI fonksiyon testi: 144/144 PASS**
 - **I2C fonksiyon testi: 52/52 PASS**
 
 ## Tamamlanan İşler
@@ -81,7 +81,7 @@ XSIM simülasyon altyapısı hazır.
 - `filelist_core.f`, `filelist_dsp_verilog.f`, `filelist_tb.f`, `filelist_tb_soc.f`, `filelist_tb_soc_full.f`
 - `filelist_uart_rtl.f`, `filelist_tb_uart.f` — UART fonksiyon testi
 - `filelist_spi_rtl.f`, `filelist_tb_spi.f` — SPI fonksiyon testi
-- `run_spi_test.ps1` — SPI fonksiyon testi runner (54/54 PASS)
+- `run_spi_test.ps1` — SPI fonksiyon testi runner (144/144 PASS)
 - `run_uart_test.ps1` — UART fonksiyon testi runner (68/68 PASS)
 - `run_i2c_test.ps1` — I2C fonksiyon testi runner (52/52 PASS)
 - `filelist_i2c_rtl.f`, `filelist_tb_i2c.f` — I2C fonksiyon testi
@@ -94,11 +94,11 @@ XSIM simülasyon altyapısı hazır.
 ### 8. SoC Entegrasyon Testi (tb/soc_tb/tb_soc_integration.sv)
 - AXI Master IF → Interconnect → DMEM/DSP/UART/SPI/I2C doğrudan sürer (pipeline bypass)
 - UART testleri: STATUS başlangıç, CTRL R/W, BAUD_DIV R/W, TX→RX loopback
-- SPI testleri: STATUS başlangıç, CTRL en+cs0, CLK_DIV R/W, TXDATA R/W, transfer(rx_valid), RXDATA, 2nd xfer, CS deassert
+- SPI testleri: STATUS başlangıç, CTRL en+cs0, CLK_DIV R/W, TXDATA R/W, 3 full-duplex transfer (0xA5↔0xA5, 0x55↔0xCC, 0xDE↔0xAD) + çift yönlü veri doğrulama, CS deassert
 - I2C testleri: STATUS başlangıç, CTRL enable, PRESCALE R/W, TXDATA R/W
 - I2C transaction testi: START + WRITE(addr) + WRITE(data) + STOP → basit slave model ACK verir
-- **40/40 PASS** (DMEM 13 + DSP 4 + UART 4 + SPI 8 + I2C 9 + Cross 2)
-- SPI slave model: shift register (init=0xA5), MOSI sample on rising SCK, MISO=MSB, CS0 active-low
+- **46/46 PASS** (DMEM 13 + DSP 4 + UART 4 + SPI 14 + I2C 9 + Cross 2)
+- SPI slave model: Geliştirilmiş çift-register BFM — ayrı TX/RX shift register, CPHA=1 first-shift-skip, CS kenar algılama, combinational MISO, CLK_DIV=4 (2-FF sync marjı)
 - I2C slave model: 7-bit addr=0x50, 4-byte internal memory, START/STOP detect, ACK/NACK
 - Debug MON bloğu `ifdef DEBUG_MON` ile korunmuş (-d DEBUG_MON ile aktifleşir)
 
@@ -198,7 +198,7 @@ XSIM simülasyon altyapısı hazır.
 ### Yüksek Öncelik
 1. ~~**Pipeline → AXI entegrasyonu:**~~ ✅ Tamamlandı — ext_mem_* portları, adres yönlendirme, stall mekanizması, 9/9 full SoC test
 2. ~~**UART modülü (rtl/uart/):**~~ ✅ Tamamlandı
-3. ~~**SPI Master (rtl/spi/):**~~ ✅ Tamamlandı — CPOL/CPHA, clock divider, multi-slave CS, 40/40 SoC test
+3. ~~**SPI Master (rtl/spi/):**~~ ✅ Tamamlandı — AD SPI spec uyumlu, CPOL/CPHA, clock divider, multi-slave CS, 144/144 fonksiyon + 46/46 SoC test
 4. ~~**I2C Master (rtl/i2c/):**~~ ✅ Tamamlandı
 
 ### 11. UART Fonksiyon Testi (tb/periph_tb/tb_uart.sv)
@@ -222,25 +222,27 @@ XSIM simülasyon altyapısı hazır.
 - Filelist: sim/filelist_uart_rtl.f, sim/filelist_tb_uart.f
 
 ### Orta Öncelik
-### 12. SPI Fonksiyon Testi (tb/periph_tb/tb_spi.sv)
+### 12. SPI Fonksiyon Testi (tb/periph_tb/tb_spi.sv) — AD Spec Uyumlu
+- Analog Devices SPI spesifikasyonuna göre doğrulanmış (https://www.analog.com/en/resources/analog-dialogue/articles/introduction-to-spi-interface.html)
 - axi_spi modülünü doğrudan AXI4-Lite sinyalleriyle sürer (pipeline/interconnect bypass)
-- 4-slave SPI Slave BFM ile full-duplex transfer testi (tüm SPI modları)
-- 14 test grubu, 54 test:
-  1. Reset değerleri (STATUS=0x00, CTRL=0, CLK_DIV=0, CMD=0)
-  2. Register R/W (CTRL tüm bitler, CLK_DIV, TXDATA readback)
-  3. Mode 0 (CPOL=0,CPHA=0) tek byte transfer
-  4. Data pattern Mode 0 (0x00, 0xFF, 0x01, 0x80, 0x5A, 0x42, 0xDE, 0x7E)
-  5. Mode 1 (CPOL=0,CPHA=1) transfer
-  6. Mode 2 (CPOL=1,CPHA=0) transfer
-  7. Mode 3 (CPOL=1,CPHA=1) transfer
-  8. Çoklu byte ardışık transfer (CS tutulu, 4 byte)
-  9. rx_valid bayrağı + STATUS temizleme (sticky davranış)
-  10. Interrupt doğrulama (ie & rx_valid)
-  11. Chip select kontrol (CS0–CS3 assert/deassert)
-  12. Farklı CLK_DIV (1, 3)
-  13. Enable kontrolü (ready, CS durumu)
-  14. Busy bayrağı doğrulama (transfer sırasında/sonrasında)
-- **54/54 PASS** — ~2.9us simülasyon süresi
+- Geliştirilmiş çift-register Slave BFM: ayrı TX/RX shift registerları, CPHA=1 first-shift-skip, CS kenar algılama, combinational MISO
+- CLK_DIV=4 (half-period=5 clocks) — 2-FF MISO senkronizör propagasyon gecikmesi (4 clock) < half-period
+- 13 test grubu, 144 test (tüm SPI modlarında 12 pattern full-duplex doğrulama):
+  1. Reset değerleri (STATUS, CTRL, CLK_DIV, CMD, RXDATA) — 5 test
+  2. Register R/W (CTRL, CLK_DIV, TXDATA, STATUS, CMD) — 8 test
+  3. Mode 0 (CPOL=0,CPHA=0) full-duplex — 12 pattern × 2 yön = 24 test
+  4. Mode 1 (CPOL=0,CPHA=1) full-duplex — 12 pattern × 2 yön = 24 test
+  5. Mode 2 (CPOL=1,CPHA=0) full-duplex — 12 pattern × 2 yön = 24 test
+  6. Mode 3 (CPOL=1,CPHA=1) full-duplex — 12 pattern × 2 yön = 24 test
+  7. Çoklu byte ardışık transfer (5 byte sıralı) — 5 test
+  8. rx_valid bayrağı + STATUS temizleme (sticky davranış) — 5 test
+  9. Interrupt doğrulama (ie & rx_valid, enable/disable) — 6 test
+  10. Chip select kontrol (CS0-CS3 + CS1 transfer) — 8 test
+  11. Farklı CLK_DIV (7, 15, restore 4) — 6 test
+  12. Enable kontrolü (ready, CS durumu) — 3 test
+  13. Busy bayrağı doğrulama — 3 test
+- Data patternleri (her mod için): 0xA5↔0x5A, 0x00↔0xFF, 0xFF↔0x00, 0x01↔0x80, 0x80↔0x01, 0xAA↔0x55, 0x55↔0xAA, 0x3C↔0xC3, 0xDE↔0xAD, 0xBE↔0xEF, 0xCA↔0xFE, 0x12↔0x34
+- **144/144 PASS** — ~88us simülasyon süresi
 - Runner: sim/run_spi_test.ps1
 - Filelist: sim/filelist_spi_rtl.f, sim/filelist_tb_spi.f
 

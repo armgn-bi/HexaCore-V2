@@ -9,7 +9,8 @@ module soc_top
   import axi_pkg::*;
 #(
   parameter string IMEM_INIT_FILE = "imem.mem",
-  parameter string DMEM_INIT_FILE = "dmem.mem"
+  parameter string DMEM_INIT_FILE = "dmem.mem",
+  parameter int    INT_DMEM_BYTES = 32768
 )(
   input  logic             clk_i,
   input  logic             rstn_i,
@@ -138,8 +139,9 @@ module soc_top
   logic             core_mem_ready;
 
   riscv_pipeline #(
-    .IMemInitFile (IMEM_INIT_FILE),
-    .DMemInitFile (DMEM_INIT_FILE)
+    .IMemInitFile   (IMEM_INIT_FILE),
+    .DMemInitFile   (DMEM_INIT_FILE),
+    .INT_DMEM_BYTES (INT_DMEM_BYTES)
   ) u_core (
     .clk_i      (clk_i),
     .rstn_i     (rstn_i),

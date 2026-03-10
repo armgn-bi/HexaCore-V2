@@ -517,7 +517,7 @@ module tb_soc_integration;
   logic spi_irq_wire;
 
   axi_spi #(
-    .DEFAULT_CLK_DIV (8'd0)   // En hızlı: SCK half-period = 1 clk cycle
+    .DEFAULT_CLK_DIV (8'd4)   // CLK_DIV=4: 2-FF MISO sync için yeterli marj
   ) u_axi_spi (
     .clk_i            (clk),
     .rstn_i           (rstn),
@@ -549,36 +549,52 @@ module tb_soc_integration;
     .irq_o            (spi_irq_wire)
   );
 
-  // ── Basit SPI Slave Modeli ────────────────────────
-  // CS aktif iken, MOSI'den gelen veriyi 1-cycle gecikmeyle MISO'ya döner
-  // (shift register — her SCK kenarında MOSI'yi yakalar, MISO'dan çıkar)
-  // SPI Mode 0 (CPOL=0, CPHA=0) için: sample on rising edge, shift on falling
-  logic [7:0] spi_slv_shift = 8'hA5;   // Slave başlangıç verisi
+  // ── Gelişmiş SPI Slave BFM — Ayrı TX/RX, Mode 0 ─────────
+  // Mode 0 (CPOL=0, CPHA=0): sample=rising, shift=falling
+  logic [7:0] spi_slv_preload = 8'hA5;
+  logic [7:0] spi_slv_tx_sr;           // TX shift register (MISO)
+  logic [7:0] spi_slv_rx_sr;           // RX shift register (MOSI)
+  logic [7:0] spi_slv_rx_cap;          // Yakalanan RX verisi
+  logic       spi_slv_cs_prev = 1'b1;
   logic       spi_sck_prev  = 1'b0;
 
   always @(posedge clk) begin
-    spi_sck_prev <= spi_sck_wire;
+    spi_sck_prev    <= spi_sck_wire;
+    spi_slv_cs_prev <= spi_ss_wire[0];
   end
 
   wire spi_sck_rise = !spi_sck_prev && spi_sck_wire;
   wire spi_sck_fall = spi_sck_prev && !spi_sck_wire;
 
-  // Slave: rising edge'de MOSI sample, falling edge'de shift
   always @(posedge clk or negedge rstn) begin
     if (!rstn) begin
-      spi_slv_shift <= 8'hA5;
-    end else if (!spi_ss_wire[0]) begin  // CS0 aktif (low)
-      if (spi_sck_rise) begin
-        // Rising edge: sample MOSI, shift in
-        spi_slv_shift <= {spi_slv_shift[6:0], spi_mosi_wire};
-      end
+      spi_slv_tx_sr  <= 8'hA5;
+      spi_slv_rx_sr  <= 8'h00;
+      spi_slv_rx_cap <= 8'h00;
     end else begin
-      spi_slv_shift <= 8'hA5;  // CS deassert → reset
+      // CS düşen kenar → yeni transfer başlangıcı
+      if (spi_slv_cs_prev && !spi_ss_wire[0]) begin
+        spi_slv_tx_sr <= spi_slv_preload;
+        spi_slv_rx_sr <= 8'h00;
+      end
+      // CS yükselen kenar → RX yakala
+      else if (!spi_slv_cs_prev && spi_ss_wire[0]) begin
+        spi_slv_rx_cap <= spi_slv_rx_sr;
+      end
+      // CS aktif iken
+      else if (!spi_ss_wire[0]) begin
+        // Rising edge: sample MOSI
+        if (spi_sck_rise)
+          spi_slv_rx_sr <= {spi_slv_rx_sr[6:0], spi_mosi_wire};
+        // Falling edge: shift TX
+        if (spi_sck_fall)
+          spi_slv_tx_sr <= {spi_slv_tx_sr[6:0], 1'b0};
+      end
     end
   end
 
-  // MISO: slave shift register'ın MSB'si
-  assign spi_miso_wire = (!spi_ss_wire[0]) ? spi_slv_shift[7] : 1'b0;
+  // MISO: slave TX shift register MSB
+  assign spi_miso_wire = (!spi_ss_wire[0]) ? spi_slv_tx_sr[7] : 1'b0;
 
   // ════════════════════════════════════════════════
   // AXI Transaction Task'ları
@@ -825,51 +841,86 @@ module tb_soc_integration;
     axi_read (32'h4000_0110, 2'b10, rd_val);
     check("SPI CLK_DIV readback", rd_val, 32'h0000_0031);
 
-    // Simülasyon hızı için CLK_DIV=0'a geri çek
-    axi_write(32'h4000_0110, 32'h0000_0000, 2'b10);
+    // CLK_DIV=4 geri yükle (sim hızı + 2-FF senkronizasyon marjı)
+    axi_write(32'h4000_0110, 32'h0000_0004, 2'b10);
 
     // 3A.4: TXDATA register yazma & okuma
     axi_write(32'h4000_0100, 32'h0000_00A5, 2'b10);  // TX=0xA5
     axi_read (32'h4000_0100, 2'b10, rd_val);
     check("SPI TXDATA readback", rd_val[7:0], 8'hA5);
 
-    // 3A.5: SPI Transfer — MOSI→Slave shift register→MISO loopback
-    //   Slave başlangıç shift = 0xA5 (reset değeri)
-    //   Master TX = 0xA5 → slave MISO'dan MSB-first slave shift register çıkar
-    //   MISO'dan okunan: slave'in 0xA5 shift değeri
-    //   CLK_DIV=0 → half-period=1 clk → 8 bit = 16 clk SCK + overhead
+    // 3A.5: SPI Full-Duplex Transfer 1 — Master TX=0xA5, Slave TX=0xA5
+    //   Slave preload = 0xA5
+    spi_slv_preload = 8'hA5;
+    // CS deassert → reassert (temiz transfer)
+    axi_write(32'h4000_010C, 32'h0000_0001, 2'b10);  // cs_en=0
+    repeat (10) @(posedge clk);
+    axi_write(32'h4000_010C, 32'h0000_0041, 2'b10);  // cs_en=1
+    repeat (10) @(posedge clk);
+    axi_write(32'h4000_0108, 32'h0000_0000, 2'b10);  // rx_valid temizle
+
     axi_write(32'h4000_0100, 32'h0000_00A5, 2'b10);  // TXDATA = 0xA5
     axi_write(32'h4000_0114, 32'h0000_0001, 2'b10);  // CMD start=1
 
     // Transfer tamamlanmasını bekle
-    repeat (100) @(posedge clk);
+    repeat (200) @(posedge clk);
 
     // 3A.6: STATUS — rx_valid=1 olmalı
     axi_read (32'h4000_0108, 2'b10, rd_val);
-    check("SPI STATUS rx_valid after xfer", rd_val[1], 1'b1);
+    check("SPI rx_valid after xfer1", rd_val[1], 1'b1);
 
-    // 3A.7: RXDATA — slave'den gelen veri
+    // 3A.7: RXDATA — slave'den gelen 0xA5
     axi_read (32'h4000_0104, 2'b10, rd_val);
-    $display("[%0t] INFO: SPI RXDATA = 0x%02h", $time, rd_val[7:0]);
+    check("SPI RXDATA = slave TX 0xA5", rd_val[7:0], 8'hA5);
 
-    // 3A.8: İkinci transfer — farklı veri
-    //   STATUS'a yaz → rx_valid temizle
+    // CS deassert → slave RX yakala
+    axi_write(32'h4000_010C, 32'h0000_0001, 2'b10);
+    repeat (10) @(posedge clk);
+    // 3A.8: Slave RX — master'dan gelen 0xA5
+    check("SPI Slave RX = master TX 0xA5", {24'd0, spi_slv_rx_cap}, 32'h0000_00A5);
+
+    // 3A.9: Full-Duplex Transfer 2 — Master TX=0x55, Slave TX=0xCC
+    spi_slv_preload = 8'hCC;
     axi_write(32'h4000_0108, 32'h0000_0000, 2'b10);  // rx_valid clear
+    axi_write(32'h4000_010C, 32'h0000_0041, 2'b10);  // CS reassert
+    repeat (10) @(posedge clk);
 
     axi_write(32'h4000_0100, 32'h0000_0055, 2'b10);  // TXDATA = 0x55
     axi_write(32'h4000_0114, 32'h0000_0001, 2'b10);  // CMD start
 
-    repeat (100) @(posedge clk);
+    repeat (200) @(posedge clk);
 
-    // 3A.9: rx_valid = 1 tekrar
     axi_read (32'h4000_0108, 2'b10, rd_val);
-    check("SPI STATUS rx_valid 2nd xfer", rd_val[1], 1'b1);
+    check("SPI rx_valid after xfer2", rd_val[1], 1'b1);
 
-    // 3A.10: RXDATA okuma
+    // 3A.10: RXDATA — slave'den gelen 0xCC
     axi_read (32'h4000_0104, 2'b10, rd_val);
-    $display("[%0t] INFO: SPI RXDATA 2nd = 0x%02h", $time, rd_val[7:0]);
+    check("SPI RXDATA = slave TX 0xCC", rd_val[7:0], 8'hCC);
 
-    // 3A.11: CS deassert — CTRL cs_en=0
+    // CS deassert → slave RX
+    axi_write(32'h4000_010C, 32'h0000_0001, 2'b10);
+    repeat (10) @(posedge clk);
+    // 3A.11: Slave RX — master'dan gelen 0x55
+    check("SPI Slave RX = master TX 0x55", {24'd0, spi_slv_rx_cap}, 32'h0000_0055);
+
+    // 3A.12: Full-Duplex Transfer 3 — 0xDE<>0xAD
+    spi_slv_preload = 8'hAD;
+    axi_write(32'h4000_0108, 32'h0000_0000, 2'b10);
+    axi_write(32'h4000_010C, 32'h0000_0041, 2'b10);
+    repeat (10) @(posedge clk);
+
+    axi_write(32'h4000_0100, 32'h0000_00DE, 2'b10);
+    axi_write(32'h4000_0114, 32'h0000_0001, 2'b10);
+    repeat (200) @(posedge clk);
+
+    axi_read (32'h4000_0104, 2'b10, rd_val);
+    check("SPI RXDATA = slave TX 0xAD", rd_val[7:0], 8'hAD);
+
+    axi_write(32'h4000_010C, 32'h0000_0001, 2'b10);
+    repeat (10) @(posedge clk);
+    check("SPI Slave RX = master TX 0xDE", {24'd0, spi_slv_rx_cap}, 32'h0000_00DE);
+
+    // 3A.13: CS deassert — final
     axi_write(32'h4000_010C, 32'h0000_0001, 2'b10);  // en=1, cs_en=0
     axi_read (32'h4000_010C, 2'b10, rd_val);
     check("SPI CTRL cs_deassert", rd_val[6], 1'b0);
@@ -1028,8 +1079,8 @@ module tb_soc_integration;
   // Watchdog timer
   // ════════════════════════════════════════════════
   initial begin
-    #200_000;
-    $fatal(1, "[WATCHDOG] Zaman asimi — test 200us icinde bitmedi!");
+    #500_000;
+    $fatal(1, "[WATCHDOG] Zaman asimi — test 500us icinde bitmedi!");
   end
   // ════════════════════════════════════════════════
   // Debug: Master IF + DMEM Slave state monitor
