@@ -346,4 +346,34 @@ module soc_top
     end
   endgenerate
 
+  // ════════════════════════════════════════════════
+  // Slave 5: DQN Inference Accelerator (AXI4-Lite Wrapper)
+  // Adres: 0x4000_2000 – 0x4000_2FFF (4 KB)
+  // Kucuk DQN: 4->16->4, Q1.15, sadece inference
+  // ════════════════════════════════════════════════
+  dqn_accelerator u_dqn_accel (
+    .clk_i            (clk_i),
+    .rstn_i           (rstn_i),
+
+    .s_axi_awaddr_i   (slv_awaddr  [SLV_DQN]),
+    .s_axi_awprot_i   (slv_awprot  [SLV_DQN]),
+    .s_axi_awvalid_i  (slv_awvalid [SLV_DQN]),
+    .s_axi_awready_o  (slv_awready [SLV_DQN]),
+    .s_axi_wdata_i    (slv_wdata   [SLV_DQN]),
+    .s_axi_wstrb_i    (slv_wstrb   [SLV_DQN]),
+    .s_axi_wvalid_i   (slv_wvalid  [SLV_DQN]),
+    .s_axi_wready_o   (slv_wready  [SLV_DQN]),
+    .s_axi_bresp_o    (slv_bresp   [SLV_DQN]),
+    .s_axi_bvalid_o   (slv_bvalid  [SLV_DQN]),
+    .s_axi_bready_i   (slv_bready  [SLV_DQN]),
+    .s_axi_araddr_i   (slv_araddr  [SLV_DQN]),
+    .s_axi_arprot_i   (slv_arprot  [SLV_DQN]),
+    .s_axi_arvalid_i  (slv_arvalid [SLV_DQN]),
+    .s_axi_arready_o  (slv_arready [SLV_DQN]),
+    .s_axi_rdata_o    (slv_rdata   [SLV_DQN]),
+    .s_axi_rresp_o    (slv_rresp   [SLV_DQN]),
+    .s_axi_rvalid_o   (slv_rvalid  [SLV_DQN]),
+    .s_axi_rready_i   (slv_rready  [SLV_DQN])
+  );
+
 endmodule
