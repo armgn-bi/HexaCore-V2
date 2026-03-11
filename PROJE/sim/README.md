@@ -4,20 +4,20 @@ Bu dizin (`sim/`), Vivado XSIM araçlarını kullanarak RISC-V SoC projesini sim
 
 ## Ön Koşullar
 
-1. **Vivado yüklü** olmalı (2020.2 veya üstü önerilir).
+1. **Vivado yüklü** olmalı (2025.1 veya üstü önerilir).
 2. Vivado `bin` dizini **PATH** ortam değişkeninde olmalı.
 
 ### PATH Ayarı (PowerShell)
 
 ```powershell
 # Vivado yolunuzu kendi kurulumunuza göre düzenleyin:
-$env:PATH = "C:\Xilinx\Vivado\2024.1\bin;" + $env:PATH
+$env:PATH = "C:\Xilinx\2025.1\Vivado\bin;" + $env:PATH
 ```
 
 ### PATH Ayarı (Bash / WSL)
 
 ```bash
-export PATH=/opt/Xilinx/Vivado/2024.1/bin:$PATH
+export PATH=/opt/Xilinx/2025.1/Vivado/bin:$PATH
 ```
 
 ## Dizin Yapısı

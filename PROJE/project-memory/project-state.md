@@ -4,7 +4,14 @@
 RV32I 5-aşamalı pipeline RISC-V çekirdeği + AXI4-Lite bus altyapısı + periferaller.
 Pipeline artık dahili DMEM ve AXI üzerinden tüm periferal erişimini destekliyor.
 XSIM simülasyon altyapısı hazır. Icarus Verilog ile DQN core testi yapılabilir.
+
+### Vivado XSIM 2025.1 Test Sonuçları (11 Mart 2026)
+- **Çekirdek Regresyon (tb_rv_all): 188/188 PASS** (BASE:16, BUBBLE:115, BOOK:20, LSU:37)
+- **SoC Entegrasyon (tb_soc_integration): 23/23 PASS** (DMEM, DSP, Stub SLVERR, Sıralı, Cross-Slave)
+- **DQN AXI Entegrasyon (tb_dqn): 27/27 PASS** (Register, Ağırlık, Inference, LeakyReLU, Reset, B2B)
 - **DQN Core standalone test: 24/24 PASS** (iverilog)
+
+### Önceki Test Sonuçları (diğer simülatör)
 - **Kapsamlı SoC sistem testi (Core→AXI→tüm periferaller): 23/23 PASS**
 - **Full SoC entegrasyon testi (pipeline→AXI→periferaller): 9/9 PASS**
 - **SoC entegrasyon testleri (AXI doğrudan): 46/46 PASS**
@@ -104,7 +111,7 @@ XSIM simülasyon altyapısı hazır. Icarus Verilog ile DQN core testi yapılabi
 - `filelist_tb_soc_sys.f` — Kapsamlı SoC sistem testi filelist
 - `xsim_run.tcl`, `xsim_run_wdb.tcl`
 - `.vscode/tasks.json` — 8 VS Code task (Compile/Elaborate/Sim/Full/Check/SoC Test/Wave/Clean)
-- Vivado 2025.2 yolu: `C:\AMDDesignTools\2025.2\Vivado\bin`
+- Vivado 2025.1 yolu: `C:\Xilinx\2025.1\Vivado\bin`
 
 ### 8. SoC Entegrasyon Testi (tb/soc_tb/tb_soc_integration.sv)
 - AXI Master IF → Interconnect → DMEM/DSP/UART/SPI/I2C doğrudan sürer (pipeline bypass)
@@ -194,6 +201,16 @@ XSIM simülasyon altyapısı hazır. Icarus Verilog ile DQN core testi yapılabi
 - **Problem:** `S_READ_BIT` state'inde, phase 10'da `shift_q <= {shift_q[6:0], sda_sync2}` ile 8 bit toplanıyor. Ardından phase 11'de `rx_data_o <= {shift_q[6:0], sda_sync2}` yapılıyordu. Ancak NBA semantiği nedeniyle `shift_q` zaten 8 bit'in tamamını içeriyor → MSB düşürülüp aynı bit tekrar ekleniyor.
 - **Örnek:** 0xA1 (10100001) → `{shift_q[6:0], sda_sync2}` = 01000011 = 0x43
 - **RTL Fix:** `rx_data_o <= shift_q;` — shift register'daki tam 8 bit doğrudan kullanıldı.
+
+### dqn_accelerator.sv STATUS register bit eşleme hatası (ÇÖZÜLDÜ — 11 Mart 2026)
+- **Problem:** STATUS register read'de `core_argmax` bit [4:3]'te yer alıyordu, belgelenen [5:4] pozisyonu yerine. `wt_loaded` ile `core_argmax` arasında padding bit eksikti.
+- **Belirtiler:** DQN testinde argmax okuma 3 testte başarısız (yanlış bit pozisyonu)
+- **RTL Fix:** STATUS read ifadesine `1'b0` padding bit eklendi: `{24'd0, 2'd0, core_argmax, 1'b0, wt_loaded, done_sticky, core_busy}`
+
+### dqn_accelerator.sv done_sticky yarış durumu (ÇÖZÜLDÜ — 11 Mart 2026)
+- **Problem:** CTRL yazımı `done_sticky`'yi temizleyip `ctrl_start` set ettiğinde, bir sonraki cycle'da `core_done` henüz düşmemiş (önceki inference'dan hala 1) → `if (core_done && !done_sticky)` koşulu anında true → done_sticky tekrar set → polling eski Q-value'larla erken çıkıyor
+- **Belirtiler:** Back-to-back inference testlerinde 3 test başarısız (stale Q-value, yanlış argmax)
+- **RTL Fix:** Koşula `&& !ctrl_start` eklendi: `if (core_done && !done_sticky && !ctrl_start)` — start pulse gönderildiğinde done_sticky'nin hemen tekrar set edilmesi engellendi
 
 ## Adres Haritası
 | Bölge      | Başlangıç    | Bitiş        | Boyut | Durum              |
@@ -302,7 +319,10 @@ XSIM simülasyon altyapısı hazır. Icarus Verilog ile DQN core testi yapılabi
 ### 16. DQN AXI-Level Testi (tb/periph_tb/tb_dqn.sv)
 - AXI Master IF + Interconnect + DQN Accelerator tam entegrasyon testi
 - Register erişim, ağırlık yükleme, inference, LeakyReLU, argmax, soft reset, back-to-back testleri
-- **Henüz çalıştırılmadı** — AMD XSIM gerektirir
+- **27/27 PASS** — AMD XSIM (Vivado 2025.1) ile doğrulandı (11 Mart 2026)
+- İlk çalıştırmada 21/27 PASS — 2 bug tespit edilip düzeltildi:
+  - Bug #9: STATUS register bit eşleme (argmax [4:3] → [5:4] padding bit eklendi)
+  - Bug #10: done_sticky yarış durumu (&& !ctrl_start koşulu eklendi)
 
 ### Orta Öncelik
 5. **Periferal testbench'leri:** ~~`tb/periph_tb/tb_uart.sv`~~✅ ~~`tb_spi.sv`~~✅ ~~`tb_i2c.sv`~~✅

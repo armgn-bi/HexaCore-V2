@@ -1004,3 +1004,4 @@ wait_tx_empty:
 ---
 
 *Bu belge HexaCore-V2 SoC projesinin teknik referans dokümanıdır. RTL kaynak kodları ile senkron tutulmalıdır.*
+*Son doğrulama: Vivado XSIM 2025.1 — 238/238 PASS (11 Mart 2026)*

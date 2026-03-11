@@ -1,8 +1,8 @@
 # HexaCore-V2 RISC-V SoC — Proje Raporu
 
 > **Proje:** HexaCore-V2 — RV32I RISC-V System-on-Chip  
-> **Simülasyon Aracı:** AMD XSIM (Vivado 2025.2)  
-> **Son Güncelleme:** Mart 2025
+> **Simülasyon Aracı:** AMD XSIM (Vivado 2025.1)  
+> **Son Güncelleme:** 11 Mart 2026
 
 ---
 
@@ -51,7 +51,7 @@ Proje aşağıdaki sıralama ile geliştirilmiştir. Her aşamada ilgili modül 
 - ALU, register_file, imm_gen, main_control, alu_control modülleri
 - Hazard detection (stall/flush) ve forwarding unit (EX→EX, MEM→EX)
 - Dahili IMEM (64KB) ve DMEM (32KB) entegrasyonu
-- **Test:** 4 adet golden-log regresyon testi → **2111/2111 PASS**
+- **Test:** 4 adet golden-log regresyon testi → **188/188 PASS** (Vivado XSIM 2025.1)
 
 ### Aşama 2 — AXI4-Lite Bus Altyapısı
 - `axi_pkg.sv` — Protokol sabitleri, adres haritası (BASE/MASK)
@@ -59,7 +59,7 @@ Proje aşağıdaki sıralama ile geliştirilmiştir. Her aşamada ilgili modül 
 - `axi_interconnect.sv` — 1-master 5-slave decoder (adres latch, DECERR desteği)
 - `axi_dmem_slave.sv` — 32KB harici DMEM slave
 - `axi_lite_slave.sv` — Genel amaçlı register interface bridge
-- **Test:** AXI doğrudan erişim testi → **46/46 PASS**
+- **Test:** AXI doğrudan erişim testi → **23/23 PASS** (Vivado XSIM 2025.1)
 
 ### Aşama 3 — Periferal Tasarımı
 Sırasıyla 4 periferal modülü tasarlanıp AXI bus'a bağlandı:
@@ -69,15 +69,14 @@ Sırasıyla 4 periferal modülü tasarlanıp AXI bus'a bağlandı:
 - **I2C** (`axi_i2c.sv`): Master, 7-bit adres, open-drain, ACK/NACK, interrupt
 - **DSP** (`dsp_filter_wrapper.sv`): MATLAB HDL Coder 11-TAP Systolic FIR, AXI4-Lite register map
 - **DQN** (`dqn_accelerator.sv`): DQN inference hızlandırıcı (4→16→4, Q1.15, LeakyReLU), AXI4-Lite register map
-- **Test:** Periferal fonksiyon testleri → UART **68/68**, SPI **144/144**, I2C **52/52**, DQN Core **24/24 PASS**
+- **Test:** Periferal fonksiyon testleri → DQN AXI **27/27 PASS** (Vivado XSIM 2025.1)
 
 ### Aşama 4 — SoC Top Entegrasyonu
 - `soc_top.sv` — Tüm modüllerin birleştirilmesi
 - Pipeline iç/dış bellek adres yönlendirmesi (`is_int_dmem`)
 - AXI stall mekanizması (`ext_stall_w` tüm 5 aşamayı dondurur)
 - **Testler:**
-  - Full SoC (pipeline→AXI→periferaller): **9/9 PASS**
-  - Kapsamlı sistem testi (UART loopback, SPI transfer, I2C transaction): **23/23 PASS**
+  - SoC entegrasyon testi: **23/23 PASS** (Vivado XSIM 2025.1)
 
 ### Aşama 5 — DSP Performans Benchmarking
 - Otomatik test üretici script (`gen_dsp_perf_tests.py`)
@@ -345,11 +344,11 @@ Testler **aşağıdan yukarıya (bottom-up)** doğrulama stratejisi ile yapılm�
 
 ```mermaid
 graph TB
-    L5["<b>Seviye 5: Performans</b><br/>DSP V1+V2 Benchmark<br/>32 test"]
-    L4["<b>Seviye 4: Sistem Testi</b><br/>Pipeline→AXI→Tüm Periferaller<br/>23 test"]
-    L3["<b>Seviye 3: Full SoC Entegrasyonu</b><br/>Pipeline→AXI→Slave R/W<br/>9 test"]
-    L2["<b>Seviye 2: Birim Fonksiyon Testleri</b><br/>UART 68 + SPI 144 + I2C 52 + AXI 46 + DQN 24<br/>334 test"]
-    L1["<b>Seviye 1: İşlemci Çekirdeği</b><br/>Pipeline Regresyon<br/>2111 test"]
+    L5["<b>Seviye 5: Performans</b><br/>DSP V1+V2 Benchmark<br/>(ileride çalıştırılacak)"]
+    L4["<b>Seviye 4: Sistem Testi</b><br/>Pipeline→AXI→Tüm Periferaller<br/>(ileride çalıştırılacak)"]
+    L3["<b>Seviye 3: SoC Entegrasyonu</b><br/>AXI Doğrudan Test<br/>23 test"]
+    L2["<b>Seviye 2: Birim Fonksiyon Testleri</b><br/>DQN AXI 27 + DQN Core 24<br/>51 test"]
+    L1["<b>Seviye 1: İşlemci Çekirdeği</b><br/>Pipeline Regresyon<br/>188 test"]
 
     L5 --- L4 --- L3 --- L2 --- L1
 
@@ -375,7 +374,7 @@ graph TB
 
 **Doğrulama yöntemi:** `tb_rv.sv` içindeki `rv_scoreboard` modülü, pipeline WB çıkışını golden log ile satır satır karşılaştırır.
 
-#### Seviye 2 — Birim Fonksiyon Testleri (310 test)
+#### Seviye 2 — Birim Fonksiyon Testleri (51 test)
 
 ##### UART Fonksiyon Testi (68 test)
 | Kategori | Test Sayısı | Kapsam |
@@ -451,6 +450,18 @@ Pipeline'ı bypass ederek AXI Master IF → Interconnect → Slave zincirini do�
 
 **Neden?** DQN çekirdeğinin FSM, MAC, LeakyReLU ve argmax bloklarını AXI katmanından bağımsız olarak doğrular. Identity-like ağırlıklar (0.5 diagonal) ile sonuçlar elle hesaplanabilir: `q[i] = state[i] × 0.5 × 0.5 = state[i] × 0.25`. Beklenen Q1.15 değerleri testbench'te karşılaştırılır.
 
+##### DQN AXI-Level Entegrasyon Testi (27 test)
+| Kategori | Test Sayısı | Kapsam |
+|----------|-------------|--------|
+| Register Erişim | 6 | VERSION readback, STATUS reset, CTRL enable R/W, STATE readback, unknown addr DECERR |
+| Ağırlık Yükleme | 5 | wt_loaded flag, FC1 weight readback, FC2 weight readback, sıfır ağırlık |
+| Inference (pozitif giriş) | 7 | QVAL_0-3 doğruluk (Q1.15), argmax=2, QVAL_MAX, CYCLE_CNT>0 |
+| LeakyReLU Doğrulama | 3 | Negatif Q-value tespiti, pozitif çıkış korunması, argmax doğruluğu |
+| Soft Reset | 1 | Reset sonrası busy=0 |
+| Arka Arkaya Inference | 5 | İki farklı giriş setiyle back-to-back çıkarım, stale veri kontrol, argmax değişimi |
+
+**Neden?** AXI bus üzerinden DQN hızlandırıcısının uçtan uca doğrulaması. Ağırlık yükleme→inference→sonuç okuma akışını gerçek AXI transaction'ları ile test eder. Back-to-back inference testi, `done_sticky` yarış durumunu ve stale Q-value problemini ortaya çıkarmıştır (bkz. Bug #9, #10).
+
 #### Seviye 3 — Full SoC Entegrasyonu (9 test)
 
 25 adet hand-encoded RISC-V komutu ile **pipeline→AXI→tüm 5 slave** zinciri uçtan uca test edilir:
@@ -504,30 +515,59 @@ Pipeline'ı bypass ederek AXI Master IF → Interconnect → Slave zincirini do�
 
 ### 7.1 Özet Tablo
 
-| Test Seviyesi | Testbench | Sonuç | Durum |
-|---------------|-----------|-------|-------|
-| Çekirdek Regresyon | `tb_rv.sv` | **2111/2111 PASS** | ✅ |
-| UART Fonksiyon | `tb_uart.sv` | **68/68 PASS** | ✅ |
-| SPI Fonksiyon | `tb_spi.sv` | **144/144 PASS** | ✅ |
-| I2C Fonksiyon | `tb_i2c.sv` | **52/52 PASS** | ✅ |
-| AXI Doğrudan | `tb_soc_integration.sv` | **46/46 PASS** | ✅ |
-| Full SoC | `tb_soc_full.sv` | **9/9 PASS** | ✅ |
-| Sistem Testi | `tb_soc_system.sv` | **23/23 PASS** | ✅ |
-| DSP V1 Perf | `tb_dsp_perf.sv` | **16/16 PASS** | ✅ |
-| DSP V2 Amdahl | `tb_dsp_perf.sv` | **16/16 PASS** | ✅ |
-| DQN Core | `tb_dqn_core_standalone.sv` | **24/24 PASS** | ✅ |
-| **TOPLAM** | | **2509/2509 PASS** | ✅ |
+| Test Seviyesi | Testbench | Araç | Sonuç | Durum |
+|---------------|-----------|------|-------|-------|
+| Çekirdek Regresyon | `tb_rv.sv` | XSIM 2025.1 | **188/188 PASS** | ✅ |
+| SoC Entegrasyon | `tb_soc_integration.sv` | XSIM 2025.1 | **23/23 PASS** | ✅ |
+| DQN AXI Entegrasyon | `tb_dqn.sv` | XSIM 2025.1 | **27/27 PASS** | ✅ |
+| DQN Core Standalone | `tb_dqn_core_standalone.sv` | iverilog | **24/24 PASS** | ✅ |
+| **TOPLAM (Vivado XSIM)** | | | **238/238 PASS** | ✅ |
 
-### 7.2 Periferal Test Detay Sonuçları
+### 7.2 Vivado XSIM 2025.1 Test Detay Sonuçları
 
-Testbench'lerin her biri, her test durumu için `[PASS]` veya `[FAIL]` etiketi üretir. Aşağıdaki sonuçlar simülasyon loglarından alınmıştır:
+Aşağıdaki tüm testler **AMD Vivado 2025.1 XSIM** simülatörü ile **11 Mart 2026** tarihinde koşulmuştur.
 
-- **UART:** 12 kategori, toplamda 68 bireysel assertion — hiçbir hata yok
-- **SPI:** 13 kategori, 4 ayrı SPI modu dahil, 144 assertion — hiçbir hata yok
-- **I2C:** 14 kategori, ACK error ve sticky flag testleri dahil, 52 assertion — hiçbir hata yok
-- **AXI Doğrudan:** 5 slave tipi × çoklu erişim boyutu, 46 transaction — hiçbir hata yok
-- **Sistem Testi:** 8 faz + bonus, UART loopback/SPI transfer/I2C transaction dahil — 882 cycle'da tamamlandı
-- **DQN Core:** 6 kategori, LeakyReLU/argmax/bias/soft-reset testleri dahil, 24 assertion — hiçbir hata yok (Icarus Verilog ile doğrulandı)
+#### Çekirdek Regresyon Testi (tb_rv_all — 188/188 PASS)
+
+| Alt Test | Test Sayısı | Sonuç |
+|----------|-------------|-------|
+| BASE (temel RV32I komutları) | 16 | ✅ PASS |
+| BUBBLE_SORT (algoritma doğrulama) | 115 | ✅ PASS |
+| BOOK (referans ders kitabı) | 20 | ✅ PASS |
+| LSU (load-store unit) | 37 | ✅ PASS |
+| **Toplam** | **188** | **✅ PASS** |
+
+Golden-log karşılaştırma yöntemi ile her komutun beklenen register/bellek değişikliklerini üretip üretmediği doğrulanmıştır.
+
+#### SoC Entegrasyon Testi (tb_soc_integration — 23/23 PASS)
+
+| Test Grubu | Test Sayısı | Kapsam |
+|------------|-------------|--------|
+| DMEM R/W | 6 | Word/half/byte yazma-okuma |
+| DSP Register | 3 | CTRL/STATUS/DATA_IN |
+| Stub Slave SLVERR | 3 | Geçersiz adres yanıtı |
+| Sıralı Erişim | 6 | Ardışık R/W operasyonları |
+| Cross-Slave | 5 | Farklı slave'ler arası geçiş |
+| **Toplam** | **23** | **✅ PASS** |
+
+#### DQN AXI-Level Entegrasyon Testi (tb_dqn — 27/27 PASS)
+
+| Test Grubu | Test Sayısı | Kapsam |
+|------------|-------------|--------|
+| Register Erişim | 6 | VERSION, STATUS reset, CTRL R/W, STATE R/W, unknown addr |
+| Ağırlık Yükleme | 5 | wt_loaded flag, FC1/FC2 weight readback, sıfır ağırlık |
+| Inference (Pozitif) | 7 | QVAL_0-3 doğruluk, argmax=2, QVAL_MAX, CYCLE_CNT |
+| LeakyReLU Doğrulama | 3 | Negatif Q-value, pozitif değişmez, argmax korunur |
+| Soft Reset | 1 | busy=0 sonrası |
+| Arka Arkaya Inference | 5 | Back-to-back iki farklı giriş seti, stale veri kontrolü |
+| **Toplam** | **27** | **✅ PASS** |
+
+**Not:** DQN testi ilk çalıştırmada 21/27 PASS üretmiştir. 6 başarısız test, `dqn_accelerator.sv`'deki iki bug'ın düzeltilmesiyle 27/27 PASS'a ulaşmıştır (bkz. [Çözülen Kritik Hatalar](#10-çözülen-kritik-hatalar) #9 ve #10).
+
+#### DQN Core Standalone Testi (tb_dqn_core_standalone — 24/24 PASS)
+
+- 6 kategori: Pozitif inference, LeakyReLU, eşit girişler, soft reset, bias testi, sıfır giriş
+- **24/24 PASS** — Icarus Verilog (iverilog -g2012) ile doğrulandı
 
 ---
 
@@ -687,6 +727,8 @@ Geliştirme sürecinde tespit edilen ve düzeltilen önemli hatalar:
 | 6 | `i2c_master` | `rx_data_o` shift hatası: NBA semantiği ile MSB düşürülüp aynı bit tekrar ekleniyordu | `rx_data_o <= shift_q` (shift register'dan direkt okuma) | I2C okuma verisi doğrulandı |
 | 7 | `gen_dsp_perf_tests.py` | Branch offset hesaplama: `(target-(idx+1))*4` yanlış formül | `(target-idx)*4` olarak düzeltildi | DSP polling döngüsü doğru çalışır |
 | 8 | `soc_top` | DMEM boyutu yetersiz: N≥4096 testlerinde 32KB DMEM taşması | `INT_DMEM_BYTES` parametresi eklendi (128KB override) | Büyük testler çalışır hale geldi |
+| 9 | `dqn_accelerator` | STATUS register bit eşleme hatası: `core_argmax` bit [4:3]'te yer alıyor, belgelenen [5:4] yerine — eksik padding bit | STATUS read'de `wt_loaded` ile `core_argmax` arasına `1'b0` padding bit eklendi: `{24'd0, 2'd0, core_argmax, 1'b0, wt_loaded, done_sticky, core_busy}` | DQN argmax okuması doğru bit pozisyonundan yapılır (3 test düzeltildi) |
+| 10 | `dqn_accelerator` | `done_sticky` yarış durumu: CTRL yazımı `done_sticky`'yi temizleyip `ctrl_start` set ettiğinde, bir sonraki cycle'da `core_done` henüz düşmemiş → `if (core_done && !done_sticky)` hemen tekrar set ediyor → polling eski Q-value'larla erken çıkıyor | Koşula `&& !ctrl_start` eklendi: `if (core_done && !done_sticky && !ctrl_start)` — start pulse'u gönderildiğinde done_sticky'nin tekrar set edilmesi engellendi | Back-to-back inference stale veri hatası giderildi (3 test düzeltildi) |
 
 ---
 
@@ -766,8 +808,8 @@ PROJE/
 
 ### 11.2 Simülasyon Çalıştırma
 
-**Gereksinimler:** AMD Vivado 2025.2 (XSIM)
-**PATH:** `C:\AMDDesignTools\2025.2\Vivado\bin`
+**Gereksinimler:** AMD Vivado 2025.1 (XSIM)
+**PATH:** `C:\Xilinx\2025.1\Vivado\bin`
 
 #### Temel Simülasyon Akışı
 ```powershell
@@ -902,4 +944,4 @@ Yeni bir periferal eklemek için:
 ---
 
 *Bu rapor, HexaCore-V2 RISC-V SoC projesinin tüm geliştirme sürecini, test stratejisini ve sonuçlarını özetlemektedir.*
-*Simülasyon: AMD XSIM (Vivado 2025.2) + Icarus Verilog — Toplam 2509/2509 PASS*
+*Simülasyon: AMD XSIM (Vivado 2025.1) + Icarus Verilog — Vivado XSIM: 238/238 PASS (11 Mart 2026)*

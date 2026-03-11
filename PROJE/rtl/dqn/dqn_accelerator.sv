@@ -244,7 +244,9 @@ module dqn_accelerator
       ctrl_soft_reset <= 1'b0;
 
       // Core done sticky flag
-      if (core_done && !done_sticky)
+      // ctrl_start kontrolu: start pulse'u gonderildiginde core_done henuz
+      // clear olmadan done_sticky'nin tekrar set edilmesini engelle
+      if (core_done && !done_sticky && !ctrl_start)
         done_sticky <= 1'b1;
 
       if (reg_wr_en) begin
@@ -304,7 +306,7 @@ module dqn_accelerator
     reg_rdata = '0;
     case (reg_addr)
       REG_CTRL:      reg_rdata = {28'd0, ctrl_wt_load_mode, ctrl_soft_reset, ctrl_start, ctrl_enable};
-      REG_STATUS:    reg_rdata = {24'd0, 2'd0, core_argmax, wt_loaded, done_sticky, core_busy};
+      REG_STATUS:    reg_rdata = {24'd0, 2'd0, core_argmax, 1'b0, wt_loaded, done_sticky, core_busy};
       REG_STATE_0:   reg_rdata = {{16{state_in[0][15]}}, state_in[0]};
       REG_STATE_1:   reg_rdata = {{16{state_in[1][15]}}, state_in[1]};
       REG_STATE_2:   reg_rdata = {{16{state_in[2][15]}}, state_in[2]};
