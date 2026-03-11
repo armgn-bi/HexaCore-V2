@@ -189,8 +189,12 @@ module dqn_accelerator
   // Agirlik okuma icin mux (WT_DATA read)
   // ════════════════════════════════════════════════
   logic signed [15:0] wt_read_data;
+  logic [5:0] fc2_rd_off;  // FC2 read offset (module scope for Vivado compat)
+  logic [5:0] fc2_wr_off;  // FC2 write offset (module scope for Vivado compat)
+  assign fc2_wr_off = wt_addr_q - 8'd80;
 
   always_comb begin
+    fc2_rd_off = wt_addr_q - 8'd80;
     wt_read_data = 16'sh0000;
     if (wt_addr_q < 8'd64) begin
       // FC1 weights: addr = input_idx*16 + output_idx
@@ -200,10 +204,7 @@ module dqn_accelerator
       wt_read_data = fc1_b[wt_addr_q - 8'd64];
     end else if (wt_addr_q < 8'd144) begin
       // FC2 weights: offset = addr - 80
-      // input_idx = offset / 4, output_idx = offset % 4
-      logic [5:0] fc2_off;
-      fc2_off = wt_addr_q - 8'd80;
-      wt_read_data = fc2_w[fc2_off[5:2]][fc2_off[1:0]];
+      wt_read_data = fc2_w[fc2_rd_off[5:2]][fc2_rd_off[1:0]];
     end else if (wt_addr_q < 8'd148) begin
       // FC2 biases: addr - 144
       wt_read_data = fc2_b[wt_addr_q - 8'd144];
@@ -275,9 +276,7 @@ module dqn_accelerator
               end else if (wt_addr_q < 8'd80) begin
                 fc1_b[wt_addr_q - 8'd64] <= reg_wdata[15:0];
               end else if (wt_addr_q < 8'd144) begin
-                logic [5:0] off;
-                off = wt_addr_q - 8'd80;
-                fc2_w[off[5:2]][off[1:0]] <= reg_wdata[15:0];
+                fc2_w[fc2_wr_off[5:2]][fc2_wr_off[1:0]] <= reg_wdata[15:0];
               end else if (wt_addr_q < 8'd148) begin
                 fc2_b[wt_addr_q - 8'd144] <= reg_wdata[15:0];
               end
