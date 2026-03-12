@@ -48,7 +48,7 @@ TB_DATA_DIR := ../tb
 # Hedefler
 # ═══════════════════════════════════════════════════════════════
 
-.PHONY: all compile elaborate sim sim_vcd wave clean help setup_links check soc_test
+.PHONY: all compile elaborate sim sim_vcd wave clean help setup_links check soc_test dqn_perf
 
 all: compile elaborate sim
 
@@ -68,6 +68,7 @@ help:
 	@echo "  make sim        : Simulasyonu calistir (xsim)"
 	@echo "  make all        : compile + elaborate + sim"
 	@echo "  make soc_test   : SoC entegrasyon testi (AXI+DMEM+DSP)"
+	@echo "  make dqn_perf   : DQN performans testi (CPU vs DQN+CPU)"
 	@echo "  make wave       : Waveform dosyasini ac (xsim GUI)"
 	@echo "  make clean      : Tum ciktilari temizle"
 	@echo "═══════════════════════════════════════════════════"
@@ -164,6 +165,30 @@ soc_test: setup_links
 	@echo "════════════════════════════════════════════════"
 	$(XSIM) $(SOC_SNAPSHOT) $(XSIM_FLAGS) 2>&1 | tee $(LOG_DIR)/soc_xsim.log
 	@echo "[SoC TEST] Entegrasyon testi tamamlandi."
+
+# ── DQN Performans Testi ───────────────────────────────
+# CPU-only vs DQN+CPU paralel labirent cozme karsilastirmasi
+DQN_PERF_TB_TOP   := tb_dqn_perf
+DQN_PERF_SNAPSHOT := $(DQN_PERF_TB_TOP)_snap
+FLIST_DQN_PERF    := filelist_dqn_perf.f
+
+dqn_perf:
+	@mkdir -p $(LOG_DIR)
+	@echo "════════════════════════════════════════════════"
+	@echo "[DQN PERF] DQN Performans Testi kaynaklari derleniyor..."
+	@echo "════════════════════════════════════════════════"
+	$(XVLOG) $(XVLOG_FLAGS_SV) -f $(FLIST_DQN_PERF) 2>&1 | tee $(LOG_DIR)/dqn_perf_xvlog.log
+	@echo ""
+	@echo "════════════════════════════════════════════════"
+	@echo "[DQN PERF] Elaboration: $(DQN_PERF_TB_TOP) -> $(DQN_PERF_SNAPSHOT)"
+	@echo "════════════════════════════════════════════════"
+	$(XELAB) $(XELAB_FLAGS) $(DQN_PERF_TB_TOP) -s $(DQN_PERF_SNAPSHOT) 2>&1 | tee $(LOG_DIR)/dqn_perf_xelab.log
+	@echo ""
+	@echo "════════════════════════════════════════════════"
+	@echo "[DQN PERF] Simulasyon baslatiliyor: $(DQN_PERF_SNAPSHOT)"
+	@echo "════════════════════════════════════════════════"
+	$(XSIM) $(DQN_PERF_SNAPSHOT) $(XSIM_FLAGS) 2>&1 | tee $(LOG_DIR)/dqn_perf_xsim.log
+	@echo "[DQN PERF] Performans testi tamamlandi."
 
 # ── Temizleme ────────────────────────────────────────────────
 clean:
