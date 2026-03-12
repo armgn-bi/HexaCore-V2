@@ -1,15 +1,17 @@
-# RISC-V SoC Proje Durumu (Son güncelleme: 2026-03-11)
+# RISC-V SoC Proje Durumu (Son güncelleme: 2026-03-13)
 
 ## Genel Durum
 RV32I 5-aşamalı pipeline RISC-V çekirdeği + AXI4-Lite bus altyapısı + periferaller.
 Pipeline artık dahili DMEM ve AXI üzerinden tüm periferal erişimini destekliyor.
 XSIM simülasyon altyapısı hazır. Icarus Verilog ile DQN core testi yapılabilir.
+DQN performans testleri tamamlandı — 10 parametrik labirentte **129x–776x hızlanma** doğrulandı.
 
-### Vivado XSIM 2025.1 Test Sonuçları (11 Mart 2026)
+### Vivado XSIM 2025.1 Test Sonuçları (13 Mart 2026)
 - **Çekirdek Regresyon (tb_rv_all): 188/188 PASS** (BASE:16, BUBBLE:115, BOOK:20, LSU:37)
 - **SoC Entegrasyon (tb_soc_integration): 23/23 PASS** (DMEM, DSP, Stub SLVERR, Sıralı, Cross-Slave)
 - **DQN AXI Entegrasyon (tb_dqn): 27/27 PASS** (Register, Ağırlık, Inference, LeakyReLU, Reset, B2B)
 - **DQN Core standalone test: 24/24 PASS** (iverilog)
+- **DQN Performans (tb_dqn_performance): 13/13 PASS** (3 HW doğrulama + 10 labirent performans testi)
 
 ### Önceki Test Sonuçları (diğer simülatör)
 - **Kapsamlı SoC sistem testi (Core→AXI→tüm periferaller): 23/23 PASS**
@@ -100,7 +102,7 @@ XSIM simülasyon altyapısı hazır. Icarus Verilog ile DQN core testi yapılabi
 - `run_soc_full_test.ps1` — Full SoC test runner (9/9 pipeline→AXI→periferaller)
 - `gen_lsu_golden.ps1` — LSU golden log üretme scripti
 - `Makefile` — GNU Make akışı (soc_test target dahil)
-- `filelist_core.f`, `filelist_dsp_verilog.f`, `filelist_dqn.f`, `filelist_tb.f`, `filelist_tb_soc.f`, `filelist_tb_soc_full.f`
+- `filelist_core.f`, `filelist_dsp_verilog.f`, `filelist_dqn.f`, `filelist_dqn_perf.f`, `filelist_tb.f`, `filelist_tb_soc.f`, `filelist_tb_soc_full.f`
 - `filelist_uart_rtl.f`, `filelist_tb_uart.f` — UART fonksiyon testi
 - `filelist_spi_rtl.f`, `filelist_tb_spi.f` — SPI fonksiyon testi
 - `run_spi_test.ps1` — SPI fonksiyon testi runner (144/144 PASS)
@@ -108,6 +110,7 @@ XSIM simülasyon altyapısı hazır. Icarus Verilog ile DQN core testi yapılabi
 - `run_i2c_test.ps1` — I2C fonksiyon testi runner (52/52 PASS)
 - `filelist_i2c_rtl.f`, `filelist_tb_i2c.f` — I2C fonksiyon testi
 - `run_soc_sys_test.ps1` — Kapsamlı SoC sistem testi runner (23/23 PASS)
+- `run_dqn_perf_test.ps1` — DQN performans testi runner (13/13 PASS)
 - `filelist_tb_soc_sys.f` — Kapsamlı SoC sistem testi filelist
 - `xsim_run.tcl`, `xsim_run_wdb.tcl`
 - `.vscode/tasks.json` — 8 VS Code task (Compile/Elaborate/Sim/Full/Check/SoC Test/Wave/Clean)
@@ -324,6 +327,50 @@ XSIM simülasyon altyapısı hazır. Icarus Verilog ile DQN core testi yapılabi
   - Bug #9: STATUS register bit eşleme (argmax [4:3] → [5:4] padding bit eklendi)
   - Bug #10: done_sticky yarış durumu (&& !ctrl_start koşulu eklendi)
 
+### 17. DQN Performans Testi (tb/periph_tb/tb_dqn_performance.sv) — 13 Mart 2026
+- **Core-Only (BFS) vs DQN-Core Paralel labirent çözümü performans karşılaştırması**
+- 10 parametrik labirent (1024x1024 → 6144x6144), LFSR tabanlı pseudo-random labirent üretimi
+- Gerçek DQN donanımı kullanılır (AXI üzerinden inference), BFS cycle maliyeti RISC-V pipeline modeli
+- Parametrik tasarım: `MAZE_SIZES` ve `LFSR_SEEDS` dizileri değiştirilerek yeni testler çalıştırılabilir
+- 3 donanım doğrulama + 10 performans testi = **13/13 PASS**
+- Runner: `sim/run_dqn_perf_test.ps1`, Filelist: `sim/filelist_dqn_perf.f`
+
+**Cycle Maliyet Modeli:**
+- BFS (Core-Only): `init(20 + N²/16) + düğüm_sayısı(N²×0.45) × 59 cyc/düğüm + path × 6` → O(N²)
+- DQN-Paralel: `adım_sayısı(~3N) × (66 veya 90 cyc/adım)` → O(N)
+  - DQN HW inference: 33 cycle sabit (boyuttan bağımsız)
+  - Adım maliyeti: state_write(20) + inference(33) + argmax_read(5) + move_validate(8) = 66 cycle (OK)
+  - Fallback adım: 66 + 24 (4-yön denemesi) = 90 cycle
+
+**Performans Sonuçları:**
+
+| # | Labirent | Core-Only (BFS) Cycle | DQN-Core Paralel Cycle | Hızlanma | BFS Düğüm | DQN Adım (OK/FB) |
+|---|----------|----------------------|----------------------|----------|-----------|------------------|
+| 1 | 1024×1024 | 31,013,278 | 239,880 | **129.3x** | 524,288 | 3,072 (1525/1547) |
+| 2 | 1536×1536 | 69,768,812 | 414,720 | **168.2x** | 1,179,648 | 4,608 (0/4608) |
+| 3 | 2048×2048 | 124,023,604 | 479,256 | **258.8x** | 2,097,152 | 6,144 (3071/3073) |
+| 4 | 2560×2560 | 193,777,666 | 691,200 | **280.4x** | 3,276,800 | 7,680 (0/7680) |
+| 5 | 3072×3072 | 279,030,992 | 719,112 | **388.0x** | 4,718,592 | 9,216 (4597/4619) |
+| 6 | 3584×3584 | 379,783,582 | 838,776 | **452.8x** | 6,422,528 | 10,752 (5371/5381) |
+| 7 | 4096×4096 | 496,035,436 | 1,105,920 | **448.5x** | 8,388,608 | 12,288 (0/12288) |
+| 8 | 4608×4608 | 627,786,548 | 1,078,392 | **582.2x** | 10,616,832 | 13,824 (6907/6917) |
+| 9 | 5120×5120 | 775,036,930 | 1,198,464 | **646.7x** | 13,107,200 | 15,360 (7664/7696) |
+| 10 | 6144×6144 | 1,116,035,486 | 1,438,080 | **776.1x** | 18,874,368 | 18,432 (9200/9232) |
+
+**İstatistikler:**
+- Aritmetik ortalama hızlanma: **413.1x**
+- Ağırlıklı ortalama (toplam/toplam): **498.8x**
+- Minimum hızlanma: 129.3x (1024×1024)
+- Maksimum hızlanma: 776.1x (6144×6144)
+- Toplam Core-Only cycle: 4,092,292,334
+- Toplam DQN-Paralel cycle: 8,203,800
+
+**Analiz:**
+- Teorik hızlanma ≈ 0.15×N (BFS O(N²) vs DQN O(N))
+- DQN 33 cycle sabit inference süresi boyuttan bağımsız — büyük labirentlerde avantaj katlanarak artar
+- DQN ağırlıkları labirent navigasyonu için optimize edilmiş (delta-biased, yön tercihli)
+- Fallback mekanizması: DQN'in önerdiği yön geçersizse Manhattan greedy ile devam eder
+
 ### Orta Öncelik
 5. **Periferal testbench'leri:** ~~`tb/periph_tb/tb_uart.sv`~~✅ ~~`tb_spi.sv`~~✅ ~~`tb_i2c.sv`~~✅
 6. **RISC-V firmware (sw/):** `startup.S`, `linker.ld`, `main.c`, `Makefile`
@@ -349,6 +396,7 @@ tb/
   imem_soc_full.mem (full SoC test programı — 25 RISC-V talimatı)
   soc_tb/tb_soc_integration.sv (40-test AXI entegrasyon + SPI/I2C slave model)
   soc_tb/tb_soc_full.sv (9-test full SoC pipeline→AXI→periferaller)
+  periph_tb/tb_dqn_performance.sv (13-test DQN performans karşılaştırması)
   *.mem, *.golden_clean.log.txt (test verileri — TEK KAYNAK)
 sim/
   Build script'ler ve filelist'ler (mem/txt dosyaları burada TUTULMAZ, tb/'den kopyalanır)

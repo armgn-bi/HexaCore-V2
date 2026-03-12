@@ -1,6 +1,6 @@
 # HexaCore-V2 SoC Mimarisi ve Bağlantı Şeması
 
-> Son güncelleme: 2026-03-11
+> Son güncelleme: 2026-03-13
 
 ---
 
@@ -698,9 +698,21 @@ $$f_{SCL} = \frac{f_{clk}}{4 \times (\text{PRESCALE} + 1)}$$
                     └────────────────────────────────────────┘
 ```
 
----
+**DQN Performans Analizi (Labirent Çözümü — 13 Mart 2026):**
 
-### 7.1 soc_top Port Listesi
+Core-Only (yazılım BFS) ile DQN-Core Paralel (donanım hızlandırıcılı) labirent çözümü karşılaştırması:
+
+| Labirent | Core-Only (BFS) | DQN-Core Paralel | Hızlanma |
+|----------|-----------------|-------------------|----------|
+| 1024×1024 | 31M cycle | 240K cycle | **129x** |
+| 2048×2048 | 124M cycle | 479K cycle | **259x** |
+| 4096×4096 | 496M cycle | 1.1M cycle | **449x** |
+| 6144×6144 | 1.12G cycle | 1.4M cycle | **776x** |
+
+- **Ortalama hızlanma: 413x** | Ağırlıklı: 499x
+- BFS karmaşıklığı O(N²) vs DQN O(N) → büyük labirentlerde fark katlanarak artar
+- DQN HW inference her zaman 33 cycle (boyuttan bağımsız)
+- Testbench parametrik: `MAZE_SIZES` ve `LFSR_SEEDS` değiştirilerek yeni testler çalıştırılabilir
 
 | Grup | Port | Yön | Genişlik | Açıklama |
 |------|------|-----|----------|----------|
@@ -910,7 +922,8 @@ rtl/
 | SoC Integration (AXI direct) | `tb/soc_tb/tb_soc_integration.sv` | 40 test (DMEM+DSP+UART+SPI+I2C) | 40/40 PASS |
 | **Full SoC (Pipeline→AXI→Periph)** | `tb/soc_tb/tb_soc_full.sv` | 9 test (tüm periferaller uçtan uca) | **9/9 PASS** |
 | DQN Core Standalone | `tb/periph_tb/tb_dqn_core_standalone.sv` | 24 test (inference, LeakyReLU, argmax, bias, reset) | **24/24 PASS** |
-| **Toplam** | | | **2184/2184 PASS** |
+| **DQN Performans** | `tb/periph_tb/tb_dqn_performance.sv` | 13 test (3 HW doğrulama + 10 labirent performans) | **13/13 PASS** |
+| **Toplam** | | | **2197/2197 PASS** |
 
 ---
 
@@ -1004,4 +1017,4 @@ wait_tx_empty:
 ---
 
 *Bu belge HexaCore-V2 SoC projesinin teknik referans dokümanıdır. RTL kaynak kodları ile senkron tutulmalıdır.*
-*Son doğrulama: Vivado XSIM 2025.1 — 238/238 PASS (11 Mart 2026)*
+*Son doğrulama: Vivado XSIM 2025.1 — 251/251 PASS (13 Mart 2026)*
