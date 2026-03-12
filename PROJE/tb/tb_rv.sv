@@ -1,11 +1,12 @@
 // tb_rv_all.sv
-// 4 testi tek koþuda sýrayla çalýþtýran testbench.
+// 4 testi tek koï¿½uda sï¿½rayla ï¿½alï¿½ï¿½tï¿½ran testbench.
 // NOT: SystemVerilog ile derleyin (-sv / -sverilog)
+`timescale 1ns / 1ps
 
 module tb_rv_all;
   import riscv_pkg::*;
 
-  // ?? Kullanacaðýnýz dosya adlarý ????????????????????????????????????????????
+  // ?? Kullanacaï¿½ï¿½nï¿½z dosya adlarï¿½ ????????????????????????????????????????????
   localparam string BASE_IMEM   = "imem_base.mem";
   localparam string BUBBLE_IMEM = "imem_bubble.mem";
   localparam string BOOK_IMEM   = "imem_book.mem";
@@ -13,7 +14,7 @@ module tb_rv_all;
 
   localparam string DMEM_FILE   = "dmem.mem";
 
-  // Golden log dosyalarý (clean)
+  // Golden log dosyalarï¿½ (clean)
   localparam string BASE_GOLDEN   = "base_test.golden_clean.log.txt";
   localparam string BUBBLE_GOLDEN = "bubble_sort.golden_clean.log.txt";
   localparam string BOOK_GOLDEN   = "book_test.golden_clean.log.txt";
@@ -118,7 +119,7 @@ module tb_rv_all;
     .mem_addr(maddr3), .mem_data(mdata3), .mem_wrt(mwrt3), .mem_read(mrd3)
   );
 
-  // ?? Sýralý koþu kontrolü ??????????????????????????????????????????????????
+  // ?? Sï¿½ralï¿½ koï¿½u kontrolï¿½ ??????????????????????????????????????????????????
   initial begin
     rstn0=0; rstn1=0; rstn2=0; rstn3=0;
     start0=0; start1=0; start2=0; start3=0;
@@ -160,7 +161,7 @@ endmodule
 
 
 // ?????????????????????????????????????????????????????????????????????????????
-// Genel amaçlý scoreboard (EXP vs GOT + PASS/FAIL)
+// Genel amaï¿½lï¿½ scoreboard (EXP vs GOT + PASS/FAIL)
 // ?????????????????????????????????????????????????????????????????????????????
 module rv_scoreboard #(
   parameter string TEST_NAME   = "TEST",
@@ -184,7 +185,7 @@ module rv_scoreboard #(
   input  logic        mem_wrt,
   input  logic        mem_read
 );
-  // golden satýrlarýný yükle
+  // golden satï¿½rlarï¿½nï¿½ yï¿½kle
   string golden[$];
 
   function automatic string rstrip(input string s);
@@ -196,13 +197,13 @@ module rv_scoreboard #(
   task automatic load_golden_from_file(input string fname);
     int fd; string line;
     fd = $fopen(fname, "r");
-    if (fd == 0) $fatal(1, "[%s] Golden açilamadi: %s", TEST_NAME, fname);
+    if (fd == 0) $fatal(1, "[%s] Golden aï¿½ilamadi: %s", TEST_NAME, fname);
     while ($fgets(line, fd)) golden.push_back(rstrip(line));
     $fclose(fd);
     $display("[%s] Golden okundu: %0d satir", TEST_NAME, golden.size());
   endtask
 
-  // >>> Burada düzeltme var: load satýrlarýnda veri yok, sadece adres yazýlýyor.
+  // >>> Burada dï¿½zeltme var: load satï¿½rlarï¿½nda veri yok, sadece adres yazï¿½lï¿½yor.
   function automatic string make_log_line();
     string s;
     s = $sformatf("0x%08h (0x%08h)", pc, instr);
@@ -240,7 +241,7 @@ module rv_scoreboard #(
 
       cycles++;
       if (cycles > MAX_CYCLES)
-        $fatal(1, "[%s] Watchdog aþildi (%0d)", TEST_NAME, MAX_CYCLES);
+        $fatal(1, "[%s] Watchdog aï¿½ildi (%0d)", TEST_NAME, MAX_CYCLES);
 
       if (update) begin
         automatic string got = make_log_line();
@@ -260,7 +261,7 @@ module rv_scoreboard #(
           $display("\n[%s] BITTI: toplam=%0d PASS=%0d FAIL=%0d\n",
                    TEST_NAME, idx, pass_cnt, fail_cnt);
           if (fail_cnt != 0)
-            $fatal(1, "[%s] Golden uyumsuzluðu var. FAIL=%0d", TEST_NAME, fail_cnt);
+            $fatal(1, "[%s] Golden uyumsuzluï¿½u var. FAIL=%0d", TEST_NAME, fail_cnt);
           done_o = 1'b1;
           disable fork;
           break;

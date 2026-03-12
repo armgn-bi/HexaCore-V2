@@ -29,5 +29,9 @@
 // DSP (SystemVerilog wrapper)
 ../rtl/dsp/dsp_filter_wrapper.sv
 
+// DQN Accelerator
+../rtl/dqn/dqn_core.sv
+../rtl/dqn/dqn_accelerator.sv
+
 // SoC Top
 ../rtl/top/soc_top.sv

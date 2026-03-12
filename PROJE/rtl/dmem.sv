@@ -50,11 +50,12 @@ import riscv_pkg::*;
         end
     end
     
-    //READ 
+    //READ
+    logic [31:0] temp;  // read temp variable (module scope for Vivado compat)
     always_comb begin
         rdata_o = '0;
+        temp = '0;
         if(mem_read_i) begin
-            logic [31:0] temp;
                 unique case(mem_size_i)
                     2'b00: begin //BYTE READ
                             temp = {24'b0, mem[byte_idx_w]};
