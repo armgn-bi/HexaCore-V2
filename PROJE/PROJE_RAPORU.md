@@ -2,7 +2,7 @@
 
 > **Proje:** HexaCore-V2 — RV32I RISC-V System-on-Chip  
 > **Simülasyon Aracı:** AMD XSIM (Vivado 2025.1)  
-> **Son Güncelleme:** 11 Mart 2026
+> **Son Güncelleme:** 26 Nisan 2026
 
 ---
 
@@ -732,7 +732,86 @@ Geliştirme sürecinde tespit edilen ve düzeltilen önemli hatalar:
 
 ---
 
-## 11. Simülasyon Altyapısı ve Dosya Haritası
+## 11. Vivado IP Paketleme ve FPGA Entegrasyonu
+
+### 11.1 IP Paketleme
+
+HexaCore-V2 SoC, Vivado IP Catalog'a IP olarak paketlenebilir:
+
+| Özellik | Değer |
+|---------|-------|
+| **IP Adı** | hexacore_v2_soc |
+| **Vendor** | hexacore |
+| **Library** | user |
+| **Version** | 1.0 |
+| **Display Name** | HexaCore-V2 RISC-V SoC |
+| **Description** | RV32I 5-stage pipeline RISC-V SoC with AXI4-Lite bus, UART, SPI, I2C, DSP FIR, and DQN accelerator |
+| **Top Modül** | soc_top |
+
+### 11.2 IP Paketleme Script'i
+
+```tcl
+# vivado/package_ip.tcl
+vivado -mode batch -source package_ip.tcl
+```
+
+IP paketlendikten sonra:
+1. Vivado GUI'de: Tools → Settings → IP → Repository
+2. `./ip_pack` dizinini ekle
+3. IP Catalog'da "HexaCore-V2 RISC-V SoC" arat
+
+### 11.3 Vivado Proje Oluşturma
+
+```tcl
+# vivado/create_project.tcl
+vivado -mode batch -source create_project.tcl
+```
+
+**Hedef:** Nexys A7-100T (xc7a100tcsg324-1)
+
+### 11.4 Constraint Dosyası
+
+`constraints/nexys_a7.xdc` dosyası Nexys A7-100T için pin atamalarını içerir:
+
+| Sinyal | Pin | IOSTANDARD |
+|--------|-----|------------|
+| CLK100MHZ | E3 | LVCMOS33 |
+| CPU_RESETN | C12 | LVCMOS33 |
+| UART_RXD_OUT | D4 | LVCMOS33 |
+| UART_TXD_IN | C4 | LVCMOS33 |
+| LED[15:0] | H17, K15, J13, N14, R18, V17, U17, U16, V16, T15, U14, T16, V15, V14, V12, V11 | LVCMOS33 |
+| SW[3:0] | J15, L16, M13, R15 | LVCMOS33 |
+| JA1 (I2C SDA) | C17 | LVCMOS33 |
+| JA2 (I2C SCL) | D17 | LVCMOS33 |
+| JB1 (SPI SCK) | U14 | LVCMOS33 |
+| JB2 (SPI MOSI) | V14 | LVCMOS33 |
+| JB3 (SPI MISO) | U15 | LVCMOS33 |
+| JB4_7[3:0] (SPI SS) | W13, V15, U17, V17 | LVCMOS33 |
+
+### 11.5 Bitstream Üretimi
+
+```tcl
+# Vivado GUI veya TCL ile
+launch_runs synth_1 -jobs 4
+wait_on_run synth_1
+launch_runs impl_1 -to_step write_bitstream -jobs 4
+wait_on_run impl_1
+```
+
+Bitstream dosyası: `hexacore_v2/hexacore_v2.runs/impl_1/hexacore_v2.bit`
+
+### 11.6 FPGA Programlama
+
+```tcl
+# Hardware Manager ile
+open_hw_target
+set_property PROGRAM.FILE {hexacore_v2.bit} [get_hw_devices xc7a100t_0]
+program_hw_devices [get_hw_devices xc7a100t_0]
+```
+
+---
+
+## 12. Simülasyon Altyapısı ve Dosya Haritası
 
 ### 11.1 Dizin Yapısı
 
@@ -868,7 +947,7 @@ xsim tb_dsp_perf_snap --runall --onerror quit
 
 ---
 
-## 12. Yeni Katılanlar İçin Hızlı Başlangıç
+## 13. Yeni Katılanlar İçin Hızlı Başlangıç
 
 ### 12.1 Ortam Kurulumu
 

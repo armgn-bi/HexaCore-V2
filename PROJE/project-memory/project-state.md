@@ -1,10 +1,11 @@
-# RISC-V SoC Proje Durumu (Son güncelleme: 2026-03-13)
+# RISC-V SoC Proje Durumu (Son güncelleme: 2026-04-26)
 
 ## Genel Durum
 RV32I 5-aşamalı pipeline RISC-V çekirdeği + AXI4-Lite bus altyapısı + periferaller.
 Pipeline artık dahili DMEM ve AXI üzerinden tüm periferal erişimini destekliyor.
 XSIM simülasyon altyapısı hazır. Icarus Verilog ile DQN core testi yapılabilir.
 DQN performans testleri tamamlandı — 10 parametrik labirentte **129x–776x hızlanma** doğrulandı.
+**Vivado IP paketleme dosyaları oluşturuldu** — constraints, package_ip.tcl, güncellenmiş create_project.tcl.
 
 ### Vivado XSIM 2025.1 Test Sonuçları (13 Mart 2026)
 - **Çekirdek Regresyon (tb_rv_all): 188/188 PASS** (BASE:16, BUBBLE:115, BOOK:20, LSU:37)
@@ -116,7 +117,30 @@ DQN performans testleri tamamlandı — 10 parametrik labirentte **129x–776x h
 - `.vscode/tasks.json` — 8 VS Code task (Compile/Elaborate/Sim/Full/Check/SoC Test/Wave/Clean)
 - Vivado 2025.1 yolu: `C:\Xilinx\2025.1\Vivado\bin`
 
-### 8. SoC Entegrasyon Testi (tb/soc_tb/tb_soc_integration.sv)
+### 8. Vivado IP Paketleme (vivado/)
+- `package_ip.tcl` — IP Catalog'a SoC'ü IP olarak ekler
+  - IP adı: hexacore_v2_soc
+  - Vendor: hexacore, Library: user, Version: 1.0
+  - Display name: HexaCore-V2 RISC-V SoC
+  - Description: RV32I 5-stage pipeline RISC-V SoC with AXI4-Lite bus, UART, SPI, I2C, DSP FIR, and DQN accelerator
+  - Tüm RTL dosyaları (SystemVerilog + Verilog) otomatik eklenir
+  - Top modül: soc_top
+  - Parametreler: IMEM_INIT_FILE, DMEM_INIT_FILE
+  - Bellek dosyaları: imem_base.mem, dmem.mem
+- `create_project.tcl` — Vivado projesi oluşturma script'i
+  - Güncellendi: UART, SPI, I2C modülleri eklendi
+  - Nexys A7-100T (xc7a100tcsg324-1) hedef
+  - Top: nexys_a7_top
+- `constraints/nexys_a7.xdc` — Nexys A7-100T pin atamaları
+  - Clock: E3 (100 MHz)
+  - Reset: C12 (CPU_RESETN)
+  - USB-UART: D4 (TX), C4 (RX)
+  - LED[15:0]: H17, K15, J13, N14, R18, V17, U17, U16, V16, T15, U14, T16, V15, V14, V12, V11
+  - SW[3:0]: J15, L16, M13, R15
+  - Pmod JA (I2C): C17 (SDA), D17 (SCL)
+  - Pmod JB (SPI): U14 (SCK), V14 (MOSI), U15 (MISO), W13/V15/U17/V17 (SS[3:0])
+
+### 9. Simülasyon (sim/)
 - AXI Master IF → Interconnect → DMEM/DSP/UART/SPI/I2C doğrudan sürer (pipeline bypass)
 - UART testleri: STATUS başlangıç, CTRL R/W, BAUD_DIV R/W, TX→RX loopback
 - SPI testleri: STATUS başlangıç, CTRL en+cs0, CLK_DIV R/W, TXDATA R/W, 3 full-duplex transfer (0xA5↔0xA5, 0x55↔0xCC, 0xDE↔0xAD) + çift yönlü veri doğrulama, CS deassert

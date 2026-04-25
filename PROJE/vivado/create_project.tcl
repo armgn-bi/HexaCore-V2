@@ -58,6 +58,14 @@ set sv_sources [list \
   "$rtl_dir/dsp/dsp_filter_wrapper.sv" \
   "$rtl_dir/dqn/dqn_core.sv" \
   "$rtl_dir/dqn/dqn_accelerator.sv" \
+  "$rtl_dir/uart/uart_fifo.sv" \
+  "$rtl_dir/uart/uart_tx.sv" \
+  "$rtl_dir/uart/uart_rx.sv" \
+  "$rtl_dir/uart/axi_uart.sv" \
+  "$rtl_dir/spi/spi_master.sv" \
+  "$rtl_dir/spi/axi_spi.sv" \
+  "$rtl_dir/i2c/i2c_master.sv" \
+  "$rtl_dir/i2c/axi_i2c.sv" \
   "$rtl_dir/top/soc_top.sv" \
   "$rtl_dir/top/nexys_a7_top.sv" \
 ]
