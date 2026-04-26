@@ -16,6 +16,7 @@ import riscv_pkg::*;
        output logic [XLEN-1:0]    rd2_o     //read data 2 
    );
     
+    // Register file - No RAM style attribute for better timing
     logic [XLEN-1:0] regs [31:0];   //32-bit 32 register
     
     //Read x0 always 0

@@ -23,23 +23,27 @@ package axi_pkg;
   // ────────────────────────────────────────────────
   // Memory Map — Slave Sayısı ve Adres Aralıkları
   // ────────────────────────────────────────────────
-  localparam int NUM_SLAVES = 6;   // DMEM, UART, SPI, I2C, DSP, DQN
+  localparam int NUM_SLAVES = 8;   // DMEM, UART, SPI, I2C, DSP, DQN, GPIO, INT_GEN
 
   // Slave indeksleri
-  localparam int SLV_DMEM = 0;
-  localparam int SLV_UART = 1;
-  localparam int SLV_SPI  = 2;
-  localparam int SLV_I2C  = 3;
-  localparam int SLV_DSP  = 4;
-  localparam int SLV_DQN  = 5;
+  localparam int SLV_DMEM    = 0;
+  localparam int SLV_UART    = 1;
+  localparam int SLV_SPI     = 2;
+  localparam int SLV_I2C     = 3;
+  localparam int SLV_DSP     = 4;
+  localparam int SLV_DQN     = 5;
+  localparam int SLV_GPIO    = 6;
+  localparam int SLV_INTGEN  = 7;
 
   // Her slave'in base ve mask değeri (addr & ~MASK == BASE ise eşleşir)
-  // DMEM : 0x8001_0000 – 0x8001_7FFF  (32 KB)
-  // UART : 0x4000_0000 – 0x4000_00FF  (256 B)
-  // SPI  : 0x4000_0100 – 0x4000_01FF  (256 B)
-  // I2C  : 0x4000_0200 – 0x4000_02FF  (256 B)
-  // DSP  : 0x4000_1000 – 0x4000_1FFF  (4 KB)
-  // DQN  : 0x4000_2000 – 0x4000_2FFF  (4 KB)
+  // DMEM     : 0x8001_0000 – 0x8001_7FFF  (32 KB)
+  // UART     : 0x4000_0000 – 0x4000_00FF  (256 B)
+  // SPI      : 0x4000_0100 – 0x4000_01FF  (256 B)
+  // I2C      : 0x4000_0200 – 0x4000_02FF  (256 B)
+  // DSP      : 0x4000_1000 – 0x4000_1FFF  (4 KB)
+  // DQN      : 0x4000_2000 – 0x4000_2FFF  (4 KB)
+  // GPIO     : 0xA000_0000 – 0xA000_0FFF  (4 KB)
+  // INT_GEN  : 0xC000_0000 – 0xC000_0FFF  (4 KB)
 
   localparam logic [AXI_ADDR_WIDTH-1:0] SLV_BASE [NUM_SLAVES] = '{
     32'h8001_0000,  // DMEM
@@ -47,16 +51,20 @@ package axi_pkg;
     32'h4000_0100,  // SPI
     32'h4000_0200,  // I2C
     32'h4000_1000,  // DSP
-    32'h4000_2000   // DQN
+    32'h4000_2000,  // DQN
+    32'hA000_0000,  // GPIO
+    32'hC000_0000   // INT_GEN
   };
 
   localparam logic [AXI_ADDR_WIDTH-1:0] SLV_MASK [NUM_SLAVES] = '{
-    32'h0000_7FFF,  // DMEM  32 KB
-    32'h0000_00FF,  // UART  256 B
-    32'h0000_00FF,  // SPI   256 B
-    32'h0000_00FF,  // I2C   256 B
-    32'h0000_0FFF,  // DSP   4 KB
-    32'h0000_0FFF   // DQN   4 KB
+    32'h0000_7FFF,  // DMEM     32 KB
+    32'h0000_00FF,  // UART     256 B
+    32'h0000_00FF,  // SPI      256 B
+    32'h0000_00FF,  // I2C      256 B
+    32'h0000_0FFF,  // DSP      4 KB
+    32'h0000_0FFF,  // DQN      4 KB
+    32'h0000_0FFF,  // GPIO     4 KB
+    32'h0000_0FFF   // INT_GEN  4 KB
   };
 
   // ────────────────────────────────────────────────

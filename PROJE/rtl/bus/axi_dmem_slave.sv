@@ -10,7 +10,7 @@ module axi_dmem_slave
 #(
   parameter int ADDR_WIDTH = AXI_ADDR_WIDTH,
   parameter int DATA_WIDTH = AXI_DATA_WIDTH,
-  parameter string DMEM_INIT_FILE = "dmem.mem",
+  parameter string DMEM_INIT_FILE = "C:/Users/DELL/Downloads/HexaCore-V2/PROJE/dmem.mem",
   parameter logic [XLEN-1:0] DMEM_BASE = 32'h8001_0000,
   parameter int DMEM_BYTES = 32768
 )(

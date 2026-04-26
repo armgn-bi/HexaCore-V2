@@ -8,8 +8,8 @@ module soc_top
   import riscv_pkg::*;
   import axi_pkg::*;
 #(
-  parameter string IMEM_INIT_FILE = "imem.mem",
-  parameter string DMEM_INIT_FILE = "dmem.mem"
+  parameter string IMEM_INIT_FILE = "C:/Users/DELL/Downloads/HexaCore-V2/PROJE/imem.mem",
+  parameter string DMEM_INIT_FILE = "C:/Users/DELL/Downloads/HexaCore-V2/PROJE/dmem.mem"
 )(
   input  logic             clk_i,
   input  logic             rstn_i,

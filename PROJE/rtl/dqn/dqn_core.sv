@@ -67,12 +67,12 @@ module dqn_core (
   logic [15:0] cycle_counter;
 
   // ════════════════════════════════════════════════
-  // Dahili depolama
+  // Dahili depolama - Vivado BRAM inference
   // ════════════════════════════════════════════════
-  logic signed [15:0] hidden [0:15];
+  (* ram_style = "distributed" *) logic signed [15:0] hidden [0:15];
   logic signed [31:0] acc;
 
-  logic signed [15:0] q_val_r [0:3];
+  (* ram_style = "distributed" *) logic signed [15:0] q_val_r [0:3];
 
   logic [1:0]         argmax_r;
   logic signed [15:0] q_max_r;

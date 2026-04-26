@@ -2,41 +2,41 @@
 /* verilator lint_off IMPORTSTAR */
 
 
-// Aþaðýda bulunan output siyalleri tasarladýðýnýz risc-v iþlemcinin log dosyalasýný doldurmak için kullanýlacak
-// yani örnek olarak update_o sinyali iþlemcideki deðiþimin logunun basýlmasý için valid sinyali olacak,
-// valid sinyaliniz 1 olduðunda reg_addr_o sinyalinde gelen bilgi log dosyasýnýn ilgili kýsýmýna düzgün
-// formatta basýlacak.
+// Aï¿½aï¿½ï¿½da bulunan output siyalleri tasarladï¿½ï¿½ï¿½nï¿½z risc-v iï¿½lemcinin log dosyalasï¿½nï¿½ doldurmak iï¿½in kullanï¿½lacak
+// yani ï¿½rnek olarak update_o sinyali iï¿½lemcideki deï¿½iï¿½imin logunun basï¿½lmasï¿½ iï¿½in valid sinyali olacak,
+// valid sinyaliniz 1 olduï¿½unda reg_addr_o sinyalinde gelen bilgi log dosyasï¿½nï¿½n ilgili kï¿½sï¿½mï¿½na dï¿½zgï¿½n
+// formatta basï¿½lacak.
 
 
 // 
-//  data_o ve addr_i sinyallerine bit uzunluðuna uygun "0" baðlayýn.
+//  data_o ve addr_i sinyallerine bit uzunluï¿½una uygun "0" baï¿½layï¿½n.
 // 
 
-// retire terimi kullanma sebebimiz o cycle'daki iþlemin bittiði noktada verilecek sinyaller olmasýdýr.
-// Memory read ve write sinyali memory üzerindeki deðiþimi loglamanýz içindir. Memory'nize baðlamak kendi 
-// tercihinize baðlýdýr. Yani, memory'nizde deðiþim olacaðýný instructiondan anlayýp sinyal belirleyebilirsiniz.
+// retire terimi kullanma sebebimiz o cycle'daki iï¿½lemin bittiï¿½i noktada verilecek sinyaller olmasï¿½dï¿½r.
+// Memory read ve write sinyali memory ï¿½zerindeki deï¿½iï¿½imi loglamanï¿½z iï¿½indir. Memory'nize baï¿½lamak kendi 
+// tercihinize baï¿½lï¿½dï¿½r. Yani, memory'nizde deï¿½iï¿½im olacaï¿½ï¿½nï¿½ instructiondan anlayï¿½p sinyal belirleyebilirsiniz.
 //
 
 //
-// Kurmanýz beklenen sistemde asýl olan deðiþimleri anlamak ve göstermektir. Ýþlemci gibi büyük sistemlerin testlerini
-// waveform üzerinden yapmak imkansýz olacaðý için burada otomatik bir kontrol sistemine uyum saðlayacak bir kontrol loglama
-// sistemi kurmanýz gerekiyor. Ýþlemci mimarisi öðrenmenizin yanýnda bu ödevin size kazandýrmasýný hedeflediðimiz þey budur.
+// Kurmanï¿½z beklenen sistemde asï¿½l olan deï¿½iï¿½imleri anlamak ve gï¿½stermektir. ï¿½ï¿½lemci gibi bï¿½yï¿½k sistemlerin testlerini
+// waveform ï¿½zerinden yapmak imkansï¿½z olacaï¿½ï¿½ iï¿½in burada otomatik bir kontrol sistemine uyum saï¿½layacak bir kontrol loglama
+// sistemi kurmanï¿½z gerekiyor. ï¿½ï¿½lemci mimarisi ï¿½ï¿½renmenizin yanï¿½nda bu ï¿½devin size kazandï¿½rmasï¿½nï¿½ hedeflediï¿½imiz ï¿½ey budur.
 //
 
 module riscv_pipeline
   import riscv_pkg::*;
 #(
-  parameter string DMemInitFile = "dmem.mem",
-  parameter string IMemInitFile = "imem.mem"
+  parameter string DMemInitFile = "C:/Users/DELL/Downloads/HexaCore-V2/PROJE/dmem.mem",
+  parameter string IMemInitFile = "C:/Users/DELL/Downloads/HexaCore-V2/PROJE/imem.mem"
 )(
   input  logic             clk_i,
   input  logic             rstn_i,
 
-  // debug arabirimi (DMEM içinden okunur)
+  // debug arabirimi (DMEM iï¿½inden okunur)
   input  logic  [XLEN-1:0] addr_i,
   output logic  [XLEN-1:0] data_o,
 
-  // retire/scoreboard portlarý
+  // retire/scoreboard portlarï¿½
   output logic             update_o,
   output logic [XLEN-1:0]  pc_o,
   output logic [XLEN-1:0]  instr_o,
@@ -60,7 +60,7 @@ module riscv_pipeline
 
   assign pcPlus4F = pcF + 32'd4;
 
-  // redirect geldiðinde stall, PC'yi engellemesin (redirect öncelikli)
+  // redirect geldiï¿½inde stall, PC'yi engellemesin (redirect ï¿½ncelikli)
   wire stallF_eff = stallF && !pcSrcE;
 
   always_ff @(posedge clk_i) begin
@@ -150,7 +150,7 @@ module riscv_pipeline
     .rd2_o (rd2D)
   );
 
-  // WB?ID tek-cycle bypass (yazýlan deðer henüz RF'ye düþmeden ID kullanýrsa)
+  // WB?ID tek-cycle bypass (yazï¿½lan deï¿½er henï¿½z RF'ye dï¿½ï¿½meden ID kullanï¿½rsa)
   wire [XLEN-1:0] rs1D_byp = (reg_writeW && (rdW != 5'd0) && (rdW == rs1D_w)) ? result_W : rd1D;
   wire [XLEN-1:0] rs2D_byp = (reg_writeW && (rdW != 5'd0) && (rdW == rs2D_w)) ? result_W : rd2D;
 
@@ -194,7 +194,7 @@ module riscv_pipeline
   logic       mem_unsignedE;
   logic       is_branchE, is_jalE, is_jalrE, is_luiE;
 
-  // pc redirect olduðunda da E'yi bubble'la
+  // pc redirect olduï¿½unda da E'yi bubble'la
   always_ff @(posedge clk_i) begin
     if (!rstn_i || flushE || pcSrcE) begin
       reg_writeE     <= 1'b0;
@@ -266,7 +266,7 @@ module riscv_pipeline
     .alu_ctrl_o(alu_ctrlE)
   );
 
-  // Forwarding seçicileri
+  // Forwarding seï¿½icileri
   logic [1:0] forwardA, forwardB;
   logic       reg_writeM;
   logic [4:0] rdM;
@@ -282,10 +282,10 @@ module riscv_pipeline
     .forwardB  (forwardB)
   );
 
-  // EX/MEM'den ileri verilebilecek deðer: klasik beþ aþamalýda ALU sonucu
+  // EX/MEM'den ileri verilebilecek deï¿½er: klasik beï¿½ aï¿½amalï¿½da ALU sonucu
   logic [XLEN-1:0] aluY_M;
 
-  // A ve B kaynaklarý (tek noktadan seçim)
+  // A ve B kaynaklarï¿½ (tek noktadan seï¿½im)
   function automatic logic [XLEN-1:0] sel_fwd(
     input logic [1:0] sel,
     input logic [XLEN-1:0] idex,
@@ -302,7 +302,7 @@ module riscv_pipeline
   wire [XLEN-1:0] aFwd = sel_fwd(forwardA, rd1E, aluY_M, result_W);
   wire [XLEN-1:0] bFwd = sel_fwd(forwardB, rd2E, aluY_M, result_W);
 
-  // LUI & ALU operand seçimi
+  // LUI & ALU operand seï¿½imi
   wire [XLEN-1:0] srcA = is_luiE ? '0 : (alu_src_a_pcE ? pcE : aFwd);
   wire [XLEN-1:0] srcB = (alu_src_b_immE ? immE : bFwd);
 
@@ -323,7 +323,7 @@ module riscv_pipeline
   // Branch compare (forwarded rs1/rs2 ile)
   logic takeBranchE;
   branch_compare u_brcmp (
-    .rs1_i   (aFwd),     // eþitlik ve < karþýlaþtýrmalarý forwarded deðerlerle
+    .rs1_i   (aFwd),     // eï¿½itlik ve < karï¿½ï¿½laï¿½tï¿½rmalarï¿½ forwarded deï¿½erlerle
     .rs2_i   (bFwd),
     .funct3_i(funct3E),
     .take_o  (takeBranchE)
@@ -382,7 +382,7 @@ module riscv_pipeline
   end
   assign reg_writeM = reg_writeM_r;
 
-  // DMEM (BASE=IMEM_BASE; testlerin adres alanýyla uyumlu)
+  // DMEM (BASE=IMEM_BASE; testlerin adres alanï¿½yla uyumlu)
   logic [XLEN-1:0] readDataM;
   dmem #(.DMemInitFile(DMemInitFile), .BASE(IMEM_BASE)) u_dmem (
     .clk_i         (clk_i),
@@ -398,7 +398,7 @@ module riscv_pipeline
     .dbg_data_o    (data_o)
   );
 
-  // store log verisini mem_size'e göre kýrp
+  // store log verisini mem_size'e gï¿½re kï¿½rp
   logic [XLEN-1:0] storeLogM;
   always_comb begin
     unique case (mem_sizeM)
@@ -459,7 +459,7 @@ module riscv_pipeline
     endcase
   end
 
-  // retire/scoreboard baðlantýlarý
+  // retire/scoreboard baï¿½lantï¿½larï¿½
   assign reg_addr_o = reg_writeW ? rdW      : 5'd0;
   assign reg_data_o = reg_writeW ? result_W : '0;
 

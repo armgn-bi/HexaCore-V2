@@ -37,14 +37,65 @@ module nexys_a7_top (
 );
 
   // ════════════════════════════════════════════════
+  // IO Buffering - Xilinx 7-series IO primitives
+  // ════════════════════════════════════════════════
+
+  // Clock Input Buffer
+  logic clk_ibuf;
+  IBUF clk_ibuf_inst (
+    .I (CLK100MHZ),
+    .O (clk_ibuf)
+  );
+
+  // Clock Buffering - Use BUFG for global clock distribution
+  logic clk_buf;
+  BUFG clk_bufg (
+    .I (clk_ibuf),
+    .O (clk_buf)
+  );
+
+  // Reset Input Buffer
+  logic rstn_ibuf;
+  IBUF rstn_ibuf_inst (
+    .I (CPU_RESETN),
+    .O (rstn_ibuf)
+  );
+
+  // UART Input Buffer
+  logic uart_rx_ibuf;
+  IBUF uart_rx_ibuf_inst (
+    .I (UART_TXD_IN),
+    .O (uart_rx_ibuf)
+  );
+
+  // Switch Input Buffers
+  logic [3:0] sw_ibuf;
+  genvar i;
+  generate
+    for (i = 0; i < 4; i = i + 1) begin : sw_buf_gen
+      IBUF sw_ibuf_inst (
+        .I (SW[i]),
+        .O (sw_ibuf[i])
+      );
+    end
+  endgenerate
+
+  // SPI MISO Input Buffer
+  logic jb3_ibuf;
+  IBUF jb3_ibuf_inst (
+    .I (JB3),
+    .O (jb3_ibuf)
+  );
+
+  // ════════════════════════════════════════════════
   // Reset Senkronizasyonu (2-FF synchronizer)
   // Board butonu zaten active-low, dogrudan kullanalim
   // ama metastabilite icin 2 FF'den gecirelim.
   // ════════════════════════════════════════════════
   logic rstn_meta, rstn_sync;
 
-  always_ff @(posedge CLK100MHZ or negedge CPU_RESETN) begin
-    if (!CPU_RESETN) begin
+  always_ff @(posedge clk_buf or negedge rstn_ibuf) begin
+    if (!rstn_ibuf) begin
       rstn_meta <= 1'b0;
       rstn_sync <= 1'b0;
     end else begin
@@ -70,10 +121,10 @@ module nexys_a7_top (
   // SoC Instance
   // ════════════════════════════════════════════════
   soc_top #(
-    .IMEM_INIT_FILE ("imem.mem"),
-    .DMEM_INIT_FILE ("dmem.mem")
+    .IMEM_INIT_FILE ("C:/Users/DELL/Downloads/HexaCore-V2/PROJE/imem.mem"),
+    .DMEM_INIT_FILE ("C:/Users/DELL/Downloads/HexaCore-V2/PROJE/dmem.mem")
   ) u_soc (
-    .clk_i          (CLK100MHZ),
+    .clk_i          (clk_buf),      // Use buffered clock
     .rstn_i         (rstn_sync),
 
     // Debug / Scoreboard
@@ -91,18 +142,18 @@ module nexys_a7_top (
 
     // UART
     .uart_tx_o      (uart_tx),
-    .uart_rx_i      (UART_TXD_IN),
+    .uart_rx_i      (uart_rx_ibuf),  // Use buffered input
     .uart_irq_o     (uart_irq),
 
     // SPI
     .spi_sck_o      (spi_sck),
     .spi_mosi_o     (spi_mosi),
-    .spi_miso_i     (JB3),
+    .spi_miso_i     (jb3_ibuf),      // Use buffered input
     .spi_ss_o       (spi_ss),
 
     // I2C
-    .i2c_sda_io     (JA1),
-    .i2c_scl_io     (JA2),
+    .i2c_sda_io     (JA1),  // Direct connection (IOBUF handles buffering)
+    .i2c_scl_io     (JA2),  // Direct connection (IOBUF handles buffering)
 
     // DSP AXI-Stream (kullanilmiyor, idle)
     .dsp_s_tdata_i  (32'd0),
@@ -118,12 +169,43 @@ module nexys_a7_top (
   // ════════════════════════════════════════════════
   // Pin Atamalari
   // ════════════════════════════════════════════════
-  assign UART_RXD_OUT = uart_tx;
+  // Internal signals for output buffering
+  logic uart_tx_int, jb1_int, jb2_int;
+  logic [3:0] jb4_7_int;
 
-  // SPI -> Pmod JB
-  assign JB1   = spi_sck;
-  assign JB2   = spi_mosi;
-  assign JB4_7 = spi_ss;
+  // Output registers for proper IO buffering
+  always_ff @(posedge clk_buf) begin
+    uart_tx_int <= uart_tx;
+    jb1_int     <= spi_sck;
+    jb2_int     <= spi_mosi;
+    jb4_7_int   <= spi_ss;
+  end
+
+  // Output Buffers
+  OBUF uart_tx_obuf_inst (
+    .I (uart_tx_int),
+    .O (UART_RXD_OUT)
+  );
+
+  OBUF jb1_obuf_inst (
+    .I (jb1_int),
+    .O (JB1)
+  );
+
+  OBUF jb2_obuf_inst (
+    .I (jb2_int),
+    .O (JB2)
+  );
+
+  genvar j;
+  generate
+    for (j = 0; j < 4; j = j + 1) begin : jb4_7_buf_gen
+      OBUF jb4_7_obuf_inst (
+        .I (jb4_7_int[j]),
+        .O (JB4_7[j])
+      );
+    end
+  endgenerate
 
   // ════════════════════════════════════════════════
   // LED Atamalari
@@ -134,11 +216,35 @@ module nexys_a7_top (
   // LED[7:4]   : PC[5:2] (instruction address low bits)
   // LED[11:8]  : SW echo (switch degerlerini yansit)
   // LED[15:12] : reg_addr (son yazilan register)
-  assign LED[0]     = update;
-  assign LED[1]     = uart_irq;
-  assign LED[3:2]   = 2'b00;
-  assign LED[7:4]   = pc[5:2];
-  assign LED[11:8]  = SW;
-  assign LED[15:12] = {reg_addr[3:0]};
+
+  // Intermediate signals to avoid direct IO-to-IO connections
+  logic [15:0] led_int;
+
+  // Combinational logic for LED values
+  always_comb begin
+    led_int[0]     = update;
+    led_int[1]     = uart_irq;
+    led_int[3:2]   = 2'b00;
+    led_int[7:4]   = pc[5:2];
+    led_int[11:8]  = sw_ibuf;      // Use buffered switch values
+    led_int[15:12] = {reg_addr[3:0]};
+  end
+
+  // Output registers for proper IO buffering
+  logic [15:0] led_reg;
+  always_ff @(posedge clk_buf) begin
+    led_reg <= led_int;
+  end
+
+  // LED Output Buffers
+  genvar k;
+  generate
+    for (k = 0; k < 16; k = k + 1) begin : led_buf_gen
+      OBUF led_obuf_inst (
+        .I (led_reg[k]),
+        .O (LED[k])
+      );
+    end
+  endgenerate
 
 endmodule

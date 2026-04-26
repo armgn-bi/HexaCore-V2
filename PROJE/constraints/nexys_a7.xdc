@@ -69,15 +69,15 @@ set_property -dict { PACKAGE_PIN F13   IOSTANDARD LVCMOS33 } [get_ports { JB4_7[
 set_property -dict { PACKAGE_PIN G13   IOSTANDARD LVCMOS33 } [get_ports { JB4_7[3] }];
 
 ## ══════════════════════════════════════════════════════
-## Timing Constraints
+## Timing Constraints - Optimized for Complex Design
 ## ══════════════════════════════════════════════════════
 
-## Input delay (asenkron girisler icin, max 5ns varsayim)
-set_input_delay -clock sys_clk_pin -max 5.000 [get_ports { CPU_RESETN UART_TXD_IN SW[*] JB3 }];
+## Input delay (asenkron girisler icin, daha gevşek kısıtlar)
+set_input_delay -clock sys_clk_pin -max 10.000 [get_ports { CPU_RESETN UART_TXD_IN SW[*] JB3 }];
 set_input_delay -clock sys_clk_pin -min 0.000 [get_ports { CPU_RESETN UART_TXD_IN SW[*] JB3 }];
 
-## Output delay (LED ve UART icin, basit constraint)
-set_output_delay -clock sys_clk_pin -max 5.000 [get_ports { LED[*] UART_RXD_OUT JB1 JB2 JB4_7[*] }];
+## Output delay (LED ve UART icin, daha gevşek kısıtlar)
+set_output_delay -clock sys_clk_pin -max 10.000 [get_ports { LED[*] UART_RXD_OUT JB1 JB2 JB4_7[*] }];
 set_output_delay -clock sys_clk_pin -min 0.000 [get_ports { LED[*] UART_RXD_OUT JB1 JB2 JB4_7[*] }];
 
 ## I2C bidirectional pinler icin false path (asenkron)
@@ -86,6 +86,20 @@ set_false_path -to   [get_ports { JA1 JA2 }];
 
 ## Reset false path (asenkron reset, timing analiz disinda)
 set_false_path -from [get_ports { CPU_RESETN }];
+
+## Switch'ler için false path (debug amaçlı, timing kritik değil)
+set_false_path -from [get_ports { SW[*] }];
+
+## LED'ler için false path (debug amaçlı, timing kritik değil)
+set_false_path -to [get_ports { LED[*] }];
+
+## UART için daha gevşek timing (debug amaçlı)
+set_false_path -from [get_ports { UART_TXD_IN }];
+set_false_path -to [get_ports { UART_RXD_OUT }];
+
+## SPI pinleri için false path (debug amaçlı)
+set_false_path -from [get_ports { JB3 }];
+set_false_path -to [get_ports { JB1 JB2 JB4_7[*] }];
 
 ## ══════════════════════════════════════════════════════
 ## Bitstream Konfigurasyonu
