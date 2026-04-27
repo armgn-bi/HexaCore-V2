@@ -168,11 +168,11 @@ module dqn_accelerator
   logic [7:0]  wt_addr_q;
   logic        wt_loaded;   // tum 148 agirlik yuklendi mi
 
-  // Agirlik bellegi
-  logic signed [15:0] fc1_w [0:3][0:15];   // 64 agirlik
-  logic signed [15:0] fc1_b [0:15];        // 16 bias
-  logic signed [15:0] fc2_w [0:15][0:3];   // 64 agirlik
-  logic signed [15:0] fc2_b [0:3];         // 4 bias
+  // Agirlik bellegi - Vivado BRAM inference
+  (* ram_style = "block" *) logic signed [15:0] fc1_w [0:3][0:15];   // 64 agirlik
+  (* ram_style = "block" *) logic signed [15:0] fc1_b [0:15];        // 16 bias
+  (* ram_style = "block" *) logic signed [15:0] fc2_w [0:15][0:3];   // 64 agirlik
+  (* ram_style = "block" *) logic signed [15:0] fc2_b [0:3];         // 4 bias
 
   // Core cikislari
   logic signed [15:0] q_val [0:3];

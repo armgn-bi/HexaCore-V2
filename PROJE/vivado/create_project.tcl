@@ -153,6 +153,23 @@ set_property strategy "Vivado Synthesis Defaults" [get_runs synth_1]
 # (zamanlama kapanmasi icin agresif optimizasyon)
 set_property strategy "Performance_ExplorePostRoutePhysOpt" [get_runs impl_1]
 
+# ══════════════════════════════════════════════════════
+# Timing Optimization Ayarlari
+# ══════════════════════════════════════════════════════
+
+# Agresif timing optimizasyon parametreleri
+set_property STEPS.PHYS_OPT_DESIGN.ARGS.DIRECTIVE ExploreWithRemap [get_runs impl_1]
+set_property STEPS.PHYS_OPT_DESIGN.ARGS.RETIMING true [get_runs impl_1]
+set_property STEPS.PHYS_OPT_DESIGN.ARGS.SSLHIFT true [get_runs impl_1]
+
+# Post-route physical optimization
+set_property STEPS.POST_ROUTE_PHYS_OPT_DESIGN.ARGS.DIRECTIVE ExploreWithRemap [get_runs impl_1]
+set_property STEPS.POST_ROUTE_PHYS_OPT_DESIGN.ARGS.RETIMING true [get_runs impl_1]
+set_property STEPS.POST_ROUTE_PHYS_OPT_DESIGN.ARGS.SSLHIFT true [get_runs impl_1]
+
+# Routing optimizasyon
+set_property STEPS.ROUTE_DESIGN.ARGS.DIRECTIVE AggressiveExplore [get_runs impl_1]
+
 # Genel parametre gecisi (IMEM/DMEM init dosyalari)
 # Not: $readmemh dosya yolu sentez sirasinda calisma dizinine gore cozulur.
 # "imem.mem" ve "dmem.mem" dosyalari proje dizinine kopyalanmistir.

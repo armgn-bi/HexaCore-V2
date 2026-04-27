@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(vivado -mode batch -source create_project.tcl)"
+    ]
+  }
+}

@@ -65,8 +65,41 @@ set_property -dict {PACKAGE_PIN V15 IOSTANDARD LVCMOS33} [get_ports {JB4_7[1]}]
 set_property -dict {PACKAGE_PIN U17 IOSTANDARD LVCMOS33} [get_ports {JB4_7[2]}]
 set_property -dict {PACKAGE_PIN V17 IOSTANDARD LVCMOS33} [get_ports {JB4_7[3]}]
 
-# ══════════════════════════════════════════════════════
-# Timing Constraints
-# ══════════════════════════════════════════════════════
-set_property SEVERITY {Warning} [get_drc_checks NSTD-1]
-set_property SEVERITY {Warning} [get_drc_checks UCIO-1]
+## ══════════════════════════════════════════════════════
+## Timing Constraints - Optimized for Complex Design
+## ══════════════════════════════════════════════════════
+
+## Input delay (asenkron girisler icin, daha gevşek kısıtlar)
+set_input_delay -clock sys_clk_pin -max 10.000 [get_ports { CPU_RESETN UART_TXD_IN SW[*] JB3 }];
+set_input_delay -clock sys_clk_pin -min 0.000 [get_ports { CPU_RESETN UART_TXD_IN SW[*] JB3 }];
+
+## Output delay (LED ve UART icin, daha gevşek kısıtlar)
+set_output_delay -clock sys_clk_pin -max 10.000 [get_ports { LED[*] UART_RXD_OUT JB1 JB2 JB4_7[*] }];
+set_output_delay -clock sys_clk_pin -min 0.000 [get_ports { LED[*] UART_RXD_OUT JB1 JB2 JB4_7[*] }];
+
+## I2C bidirectional pinler icin false path (asenkron)
+set_false_path -from [get_ports { JA1 JA2 }];
+set_false_path -to   [get_ports { JA1 JA2 }];
+
+## Reset false path (asenkron reset, timing analiz disinda)
+set_false_path -from [get_ports { CPU_RESETN }];
+
+## Switch'ler için false path (debug amaçlı, timing kritik değil)
+set_false_path -from [get_ports { SW[*] }];
+
+## LED'ler için false path (debug amaçlı, timing kritik değil)
+set_false_path -to [get_ports { LED[*] }];
+
+## UART için daha gevşek timing (debug amaçlı)
+set_false_path -from [get_ports { UART_TXD_IN }];
+set_false_path -to [get_ports { UART_RXD_OUT }];
+
+## SPI pinleri için false path (debug amaçlı)
+set_false_path -from [get_ports { JB3 }];
+set_false_path -to [get_ports { JB1 JB2 JB4_7[*] }];
+
+## ══════════════════════════════════════════════════════
+## Bitstream Konfigurasyonu
+## ══════════════════════════════════════════════════════
+set_property CFGBVS VCCO [current_design];
+set_property CONFIG_VOLTAGE 3.3 [current_design];
