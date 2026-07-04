@@ -1,0 +1,120 @@
+<?xml version="1.0"?>
+<POWERDATA author="Vivado Power Analysis" dataVersion="2025.1" design="nexys_a7_top" designState="routed" date="Sat Jul  4 11:45:24 2026" pwrOpt="None" activityLevel="vectorless">
+	<ENVIRONMENT>
+		<DEVICE part="xc7a100t" grade="commercial" package="csg324" speed="-1" process="typical" vid="No">
+		</DEVICE>
+		<VOLTAGESOURCES>
+			<SOURCE name="Vcco33" voltage="3.300000" icc="0.006218" iccq="0.004000" power="0.033720">
+			</SOURCE>
+			<SOURCE name="Vccbram" voltage="1.000000" icc="0.000000" iccq="0.000255" power="0.000255">
+			</SOURCE>
+			<SOURCE name="Vccint" voltage="1.000000" icc="0.195156" iccq="0.015562" power="0.210719">
+			</SOURCE>
+			<SOURCE name="Vccaux" voltage="1.800000" icc="0.000805" iccq="0.018188" power="0.034187">
+			</SOURCE>
+			<SOURCE name="Vccadc" voltage="1.800000" icc="0.000000" iccq="0.020000" power="0.036000">
+			</SOURCE>
+		</VOLTAGESOURCES>
+		<THERMAL>
+			<AMBIENT value="25.000000">
+			</AMBIENT>
+			<AIRFLOW value="250.000000">
+			</AIRFLOW>
+			<HEATSINK value="medium (Medium Profile)">
+			</HEATSINK>
+			<BOARDSELECTION value="medium (10&quot;x10&quot;)">
+			</BOARDSELECTION>
+			<BOARDLAYERS value="12to15 (12 to 15 Layers)">
+			</BOARDLAYERS>
+			<TSA value="4.600000">
+			</TSA>
+			<TJB value="5.700000">
+			</TJB>
+			<BOARDTEMP value="25.0 (C)">
+			</BOARDTEMP>
+			<JUNCTION value="26.4 (C)">
+			</JUNCTION>
+		</THERMAL>
+	</ENVIRONMENT>
+	<BLOCKDETAILS>
+		<BYTYPE>
+			<BLOCKTYPE name="Clocks">
+				<CLOCK name="CLK100MHZ" freq="100.000001" belFanout="1" sliceFanout="1" FoPerSite="1.000000" sliceEnableRate="0.000000" leafs="0.000000" hrows="0.000000" power="0.000000">
+				</CLOCK>
+				<CLOCK name="clk_buf" freq="100.000001" belFanout="5597" sliceFanout="1667" FoPerSite="3.357528" sliceEnableRate="0.095819" leafs="57.000000" hrows="4.000000" power="0.012309" enableRate="1" bufType="BUFG">
+				</CLOCK>
+				<CLOCK name="clk_ibuf" freq="100.000001" belFanout="1" sliceFanout="1" FoPerSite="1.000000" sliceEnableRate="0.000000" leafs="0.000000" hrows="0.000000" power="0.000076" enableRate="1" bufType="I/O">
+				</CLOCK>
+			</BLOCKTYPE>
+			<BLOCKTYPE name="LOGIC">
+				<LOGIC clock="Unclocked_or_HFN_instance" clockFreq="100.000001" clockFreq2="100.000001" toggleRate="55.606442" toggleRate2="34.043071" totalRate="419015.754141" name="sys_clk_pin" hierName="nexys_a7_top/u_soc" writeRate="0.000000" enableRate="0.000000" fanout="3.359269" ru="10.604421" fanout2="3.116295" totalFanout="9930.000000" fanoutRate="149983.670845" numNets="7127" extNets="2956" SMUX="3877" carry4s="74" luts="2844" logicCap="1683571484" signalCap="1330170.000000" power="0.040481" sp="0.031032">
+				</LOGIC>
+				<LOGIC clock="clk_buf" clockFreq="100.000001" clockFreq2="100.000001" toggleRate="17.242006" toggleRate2="31.494229" totalRate="129000.361741" name="sys_clk_pin" hierName="nexys_a7_top/u_soc" writeRate="0.001161" enableRate="0.000000" fanout="0.000000" ru="0.000000" fanout2="0.000000" totalFanout="0.000000" fanoutRate="0.000000" numNets="4096" extNets="0" RAM="4096" logicCap="2281471959" signalCap="0.000000" power="0.019669" sp="0.000000">
+				</LOGIC>
+				<LOGIC clock="clk_buf" clockFreq="100.000001" clockFreq2="100.000001" toggleRate="9.479683" toggleRate2="9.588641" totalRate="13262.076357" name="sys_clk_pin" hierName="nexys_a7_top/u_soc" writeRate="0.000000" enableRate="0.310457" fanout="2.163688" ru="9.345923" fanout2="2.165582" totalFanout="3027.000000" fanoutRate="16198.155152" numNets="1399" extNets="1399" ffs="1399" logicCap="62640000" signalCap="494959.000000" power="0.000298" sp="0.003409">
+				</LOGIC>
+				<LOGIC clock="Unclocked_or_HFN_instance" clockFreq="100.000001" clockFreq2="35.636985" toggleRate="34.952714" toggleRate2="34.217021" totalRate="5602.537856" name="High_Fanout_Nets" hierName="nexys_a7_top/u_soc" writeRate="0.000000" enableRate="0.999639" fanout="332.348101" ru="29.205994" fanout2="335.519737" totalFanout="52511.000000" fanoutRate="1023867.069614" numNets="158" extNets="158" ffs="87" luts="69" logicCap="37142701" signalCap="4367481.000000" power="0.000578" sp="0.086848">
+				</LOGIC>
+				<LOGIC clock="Unclocked_or_HFN_instance" clockFreq="100.000001" clockFreq2="100.000001" toggleRate="0.000000" toggleRate2="0.000000" totalRate="0.000000" name="sys_clk_pin" hierName="nexys_a7_top" writeRate="0.000000" enableRate="0.000000" fanout="2.000000" ru="8.450980" fanout2="0.000000" totalFanout="2.000000" fanoutRate="0.000000" numNets="1" extNets="1" luts="1" logicCap="0" signalCap="358.000000" power="0.000000" sp="0.000000">
+				</LOGIC>
+				<LOGIC clock="clk_buf" clockFreq="100.000001" clockFreq2="100.000001" toggleRate="25.124572" toggleRate2="31.405715" totalRate="376.868580" name="sys_clk_pin" hierName="nexys_a7_top" writeRate="0.000000" enableRate="1.000000" fanout="1.200000" ru="11.072100" fanout2="1.000000" totalFanout="18.000000" fanoutRate="188.434291" numNets="15" extNets="15" ffs="15" logicCap="540000" signalCap="15988.000000" power="0.000008" sp="0.000255">
+				</LOGIC>
+			</BLOCKTYPE>
+			<BLOCKTYPE name="IO">
+				<MODULE name="CLK100MHZ" count="1">
+					<GROUPSUMMARY>
+						<IO name="CLK100MHZ" clock="sys_clk_pin" clockFreq="100.000001" ioStandard="LVCMOS33" bidis="0" inputs="1" outputs="0" signalRate="200.000000" toggleRate="200.000000" dataRate="Clock" serdes="No" preEmphasis="No" ioDelay="No" ibufLowPower="Yes" inTerm="RTT_NONE" outTerm="NONE" numHR="1" ibufDisable="0.000000" dcitermDisable="0.000000" ioBank="0" vccInt="0.000064" vccAux="0.000000" vcco="0.000000" vccoCurrent="0.000000" extTerm="NONE">
+						</IO>
+					</GROUPSUMMARY>
+				</MODULE>
+				<MODULE name="CPU_RESETN" count="1">
+					<GROUPSUMMARY>
+						<IO name="CPU_RESETN" clock="sys_clk_pin" clockFreq="100.000001" ioStandard="LVCMOS33" bidis="0" inputs="1" outputs="0" signalRate="0.000000" toggleRate="0.000000" dataRate="SDR" serdes="No" preEmphasis="No" ioDelay="No" ibufLowPower="Yes" inTerm="RTT_NONE" outTerm="NONE" numHR="1" ibufDisable="0.000000" dcitermDisable="0.000000" ioBank="0" vccInt="0.000000" vccAux="0.000000" vcco="0.000000" vccoCurrent="0.000000" extTerm="NONE">
+						</IO>
+					</GROUPSUMMARY>
+				</MODULE>
+				<MODULE name="JB1" count="1">
+					<GROUPSUMMARY>
+						<IO name="JB1" clock="N/A" clockFreq="0.000000" ioStandard="LVCMOS33_12_SLOW" bidis="0" inputs="0" outputs="1" signalRate="0.000000" toggleRate="0.000000" outputEnableRate="1.000000" outputLoad="0.000000" dataRate="ASYNC" serdes="No" preEmphasis="No" ioDelay="No" ibufLowPower="No" inTerm="NONE" outTerm="RDRV_NONE_NONE" numHR="1" ibufDisable="0.000000" dcitermDisable="0.000000" ioBank="0" vccInt="0.000000" vccAux="0.000000" vcco="0.000000" vccoCurrent="0.000000" extTerm="NONE">
+						</IO>
+					</GROUPSUMMARY>
+				</MODULE>
+				<MODULE name="JB2" count="1">
+					<GROUPSUMMARY>
+						<IO name="JB2" clock="N/A" clockFreq="0.000000" ioStandard="LVCMOS33_12_SLOW" bidis="0" inputs="0" outputs="1" signalRate="0.000000" toggleRate="0.000000" outputEnableRate="1.000000" outputLoad="0.000000" dataRate="ASYNC" serdes="No" preEmphasis="No" ioDelay="No" ibufLowPower="No" inTerm="NONE" outTerm="RDRV_NONE_NONE" numHR="1" ibufDisable="0.000000" dcitermDisable="0.000000" ioBank="0" vccInt="0.000000" vccAux="0.000000" vcco="0.000000" vccoCurrent="0.000000" extTerm="NONE">
+						</IO>
+					</GROUPSUMMARY>
+				</MODULE>
+				<MODULE name="JB4_7&lt;0:3&gt;" count="4">
+					<GROUPSUMMARY>
+						<IO name="JB4_7&lt;0:3&gt;" clock="N/A" clockFreq="0.000000" ioStandard="LVCMOS33_12_SLOW" bidis="0" inputs="0" outputs="4" signalRate="0.000000" toggleRate="0.000000" outputEnableRate="1.000000" outputLoad="0.000000" dataRate="ASYNC" serdes="No" preEmphasis="No" ioDelay="No" ibufLowPower="No" inTerm="NONE" outTerm="RDRV_NONE_NONE" numHR="4" ibufDisable="0.000000" dcitermDisable="0.000000" ioBank="0" vccInt="0.000000" vccAux="0.000000" vcco="0.000000" vccoCurrent="0.000000" extTerm="NONE">
+						</IO>
+					</GROUPSUMMARY>
+				</MODULE>
+				<MODULE name="LED&lt;0:15&gt;" count="16">
+					<GROUPSUMMARY>
+						<IO name="LED&lt;0:15&gt;" clock="N/A" clockFreq="0.000000" ioStandard="LVCMOS33_12_SLOW" bidis="0" inputs="0" outputs="16" signalRate="23.554286" toggleRate="23.554286" outputEnableRate="1.000000" outputLoad="0.000000" dataRate="ASYNC" serdes="No" preEmphasis="No" ioDelay="No" ibufLowPower="No" inTerm="NONE" outTerm="RDRV_NONE_NONE" numHR="16" ibufDisable="0.000000" dcitermDisable="0.000000" ioBank="0" vccInt="0.000000" vccAux="0.001449" vcco="0.020520" vccoCurrent="0.006218" extTerm="NONE">
+						</IO>
+					</GROUPSUMMARY>
+				</MODULE>
+				<MODULE name="SW&lt;0:3&gt;" count="4">
+					<GROUPSUMMARY>
+						<IO name="SW&lt;0:3&gt;" clock="sys_clk_pin" clockFreq="100.000001" ioStandard="LVCMOS33" bidis="0" inputs="4" outputs="0" signalRate="12.500000" toggleRate="12.500000" dataRate="SDR" serdes="No" preEmphasis="No" ioDelay="No" ibufLowPower="Yes" inTerm="RTT_NONE" outTerm="NONE" numHR="4" ibufDisable="0.000000" dcitermDisable="0.000000" ioBank="0" vccInt="0.000016" vccAux="0.000000" vcco="0.000000" vccoCurrent="0.000000" extTerm="NONE">
+						</IO>
+					</GROUPSUMMARY>
+				</MODULE>
+				<MODULE name="UART_RXD_OUT" count="1">
+					<GROUPSUMMARY>
+						<IO name="UART_RXD_OUT" clock="N/A" clockFreq="0.000000" ioStandard="LVCMOS33_12_SLOW" bidis="0" inputs="0" outputs="1" signalRate="0.000000" toggleRate="0.000000" outputEnableRate="1.000000" outputLoad="0.000000" dataRate="ASYNC" serdes="No" preEmphasis="No" ioDelay="No" ibufLowPower="No" inTerm="NONE" outTerm="RDRV_NONE_NONE" numHR="1" ibufDisable="0.000000" dcitermDisable="0.000000" ioBank="0" vccInt="0.000000" vccAux="0.000000" vcco="0.000000" vccoCurrent="0.000000" extTerm="NONE">
+						</IO>
+					</GROUPSUMMARY>
+				</MODULE>
+			</BLOCKTYPE>
+			<BLOCKTYPE name="IOBANK">
+				<IOBANK numInternalVref="0" numDelayControl="0" numLVDSBanks="0">
+				</IOBANK>
+			</BLOCKTYPE>
+		</BYTYPE>
+	</BLOCKDETAILS>
+</POWERDATA>
+
