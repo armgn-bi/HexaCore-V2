@@ -1,0 +1,97 @@
+# ─────────────────────────────────────────────────────
+# nexys_a7.xdc — Nexys A7-100T Constraint Dosyası
+# Board: Digilent Nexys A7-100T (xc7a100tcsg324-1)
+# ─────────────────────────────────────────────────────
+
+# ═════════════════════════════════════════════════════════════════════
+# Clock
+# ═══════════════════════════════════════════════════════════════════
+set_property -dict {PACKAGE_PIN E3 IOSTANDARD LVCMOS33} [get_ports CLK100MHZ]
+create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports CLK100MHZ]
+
+# ══════════════════════════════════════════════════════════════════════
+# Reset
+# ═════════════════� SET PROPERTY -DICT {PACKAGE_PIN C12 IOSTANDARD LVCMOS33} [GET_PORTS CPU_RESETN]
+
+# ══════════════════════════════�₁ USB-UART (FTDI)
+# ═════════════════════�₁ RAID 20
+set_property -dict {PACKAGE_PIN D4 IOSTANDARD LVCMOS33} [get_ports UART_RXD_OUT]
+set_property -dict {PACKAGE_PIN C4 IOSTANDARD LVCMOS33} [get_ports UART_TXD_IN]
+
+# ═══════════════════════�_LED'ler
+# ═══════════�_LED'ler
+set_property -dict {PACKAGE_PIN H17 IOSTANDARD LVCMOS33} [get_ports {LED[0]}]
+set_property -dict {PACKAGE_PIN K15 IOSTANDARD LVCMOS33} [get_ports {LED[1]}]
+set_property -dict {PACKAGE_PIN J13 IOSTANDARD LVCMOS33} [get_ports {LED[2]}]
+set_property -dict {PACKAGE_PIN N14 IOSTANDARD LVCMOS33} [get_ports {LED[3]}]
+set_property -dict {PACKAGE_PIN R18 IOSTANDARD LVCMOS33} [get_ports {LED[4]}]
+set_property -dict {PACKAGE_PIN AA18 IOSTANDARD LVCMOS33} [get_ports {LED[5]}]
+set_property -dict {PACKAGE_PIN AB18 IOSTANDARD LVCMOS33} [get_ports {LED[6]}]
+set_property -dict {PACKAGE_PIN U16 IOSTANDARD LVCMOS33} [get_ports {LED[7]}]
+set_property -dict {PACKAGE_PIN V16 IOSTANDARD LVCMOS33} [get_ports {LED[8]}]
+set_property -dict {PACKAGE_PIN T15 IOSTANDARD LVCMOS33} [get_ports {LED[9]}]
+set_property -dict {PACKAGE_PIN AA17 IOSTANDARD LVCMOS33} [get_ports {LED[10]}]
+set_property -dict {PACKAGE_PIN T16 IOSTANDARD LVCMOS33} [get_ports {LED[11]}]
+set_property -dict {PACKAGE_PIN AB17 IOSTANDARD LVCMOS33} [get_ports {LED[12]}]
+set_property -dict {PACKAGE_PIN Y18 IOSTANDARD LVCMOS33} [get_ports {LED[13]}]
+set_property -dict {PACKAGE_PIN V12 IOSTANDARD LVCMOSAND} [get_ports {LED[14]}]
+set_property -dict {PACKAGE_PIN V11 IOSTANDARD LVCMOS33} [get_ports {LED[15]}]
+
+# ═══�=SWITCH'LER
+# ═�_SWİTCH'LER
+set_property -dict {PACKAGE_PIN J15 IOSTANDARD LVCMOS33} [get_ports {SW[0]}]
+set_property -dict {PACKAGE_PIN L16 IOSTANDARD LVCMOS33} [get_ports {SW[1]}]
+set_property -dict {PACKAGE_PIN M13 IOSTANDARD LVCMOS33} [get_ports {SW[2]}]
+set_property -dict {PACKAGE_PIN R15 IOSTANDARD LVCMOS33} [get_ports {SW[3]}]
+
+# ═�_PMOD JA (I2C)
+# ═�-PMOD JA (I2C)
+set_property -dict {PACKAGE_PIN C17 IOSTANDARD LVCMOS33} [get_ports JA1]
+set_property -dict {PACKAGE_PIN D17 IOSTANDARD LVCMOS33} [get_ports JA2]
+
+# ═�-PMOD JB (SPI)
+# ═�_PMOD JB (SPI)
+set_property -dict {PACKAGE_PIN U14 IOSTANDARD LVCMOS33} [get_ports JB1]
+set_property -dict {PACKAGE_PIN V14 IOSTANDARD LVCMOS33} [get_ports JB2]
+set_property -dict {PACKAGE_PIN U15 IOSTANDARD LVCMOS33} [get_ports JB3]
+set_property -dict {PACKAGE_PIN W13 IOSTANDARD LVCMOS33} [get_ports {JB4_7[0]}]
+set_property -dict {PACKAGE_PIN V15 IOSTANDARD LVCMOS33} [get_ports {JB4_7[1]}]
+set_property -dict {PACKAGE_PIN U17 IOSTANDARD LVCMOS33} [get_ports {JB4_7[2]}]
+set_property -dict {PACKAGE_PIN V17 IOSTANDARD LVCMOS33} [get_ports {JB4_7[3]}]
+
+## ═�_TIMING CONSTRAINTS - OPTIMIZED FOR COMPLEX DESIGN
+## ═�_TIMING CONSTRAINTS - OPTIMIZED FOR COMPLEX DESIGN
+
+## INPUT DELAY (ASYNC INPUTS, LOOSE CONSTRAINTS)
+SET_INPUT_DELAY -CLK SYS_CLK_PIN -MAX 10.000 [GET_PORTS { CPU_RESETN UART_TXD_IN SW[*] JB3 }];
+SET_INPUT_DELAY -CLK SYS_CLK_PIN -MIN 0.000 [GET_PORTS { CPU_RESETN UART_TXD_IN SW[*] JB3 }];
+
+## OUTPUT DELAY (LED AND UART, LOOSE CONSTRAINTS)
+SET_OUTPUT_DELAY -CLK SYS_CLK_PIN -MAX 10.000 [GET_PORTS { LED[*] UART_RXD_OUT JB1 JB2 JB4_7[*] }];
+SET_OUTPUT_DELAY -CLK SYS_CLK_PIN -MIN 0.000 [GET_PORTS { LED[*] UART_RXD_OUT JB1 JB2 JB4_7[*] }];
+
+## I2C BIDIRECTIONAL PINS FALSE PATH (ASYNC)
+SET_FALSE_PATH -FROM [GET_PORTS { JA1 JA2 }];
+SET_FALSE_PATH -TO   [GET_PORTS { JA1 JA2 }];
+
+## RESET FALSE PATH (ASYNC RESET, TIMING ANALYSIS EXCEPT)
+SET_FALSE_PATH -FROM [GET_PORTS { CPU_RESETN }];
+
+## SWITCH'LER FOR FALSE PATH (DEBUG PURPOSE, NOT TIMING CRITICAL)
+SET_FALSE_PATH -FROM [GET_PORTS { SW[*] }];
+
+## LED'LER FOR FALSE PATH (DEBUG PURPOSE, NOT TIMING CRITICAL)
+SET_FALSE_PATH -TO [GET_PORTS { LED[*] }];
+
+## UART FOR LOOSE TIMING (DEBUG PURPOSE)
+SET_FALSE_PATH -FROM [GET_PORTS { UART_TXD_IN }];
+SET_FALSE_PATH -TO [GET_PORTS { UART_RXD_OUT }];
+
+## SPI PINS FOR FALSE PATH (DEBUG PURPOSE)
+SET_FALSE_PATH -FROM [GET_PORTS { JB3 }];
+SET_FALSE_PATH -TO [GET_PORTS { JB1 JB2 JB4_7[*] }];
+
+## ═�_BITSTREAM CONFIGURATION
+## ═�_BITSTREAM CONFIGURATION
+SET_PROPERTY CFGBVS VCCO [CURRENT_DESIGN];
+SET_PROPERTY CONFIG_VOLTAGE 3.3 [CURRENT_DESIGN];

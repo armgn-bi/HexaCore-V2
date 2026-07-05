@@ -225,9 +225,9 @@ module nexys_a7_top (
     led_int[0]     = update;
     led_int[1]     = uart_irq;
     led_int[3:2]   = 2'b00;
-    led_int[7:4]   = pc[5:2];
-    led_int[11:8]  = sw_ibuf;      // Use buffered switch values
-    led_int[15:12] = {reg_addr[3:0]};
+    led_int[7:4]   = {pc[5], 2'b0, pc[2]};   // [7]=pc5, [6]=0, [5]=0, [4]=pc2
+        led_int[11:8]  = {sw_ibuf[3], 1'b0, sw_ibuf[1:0]}; // [11]=sw3, [10]=0, [9]=sw1, [8]=sw0      // Use buffered switch values
+        led_int[15:12] = {reg_addr[3:2], 2'b0};   // [15]=reg3, [14]=reg2, [13]=0, [12]=0
   end
 
   // Output registers for proper IO buffering

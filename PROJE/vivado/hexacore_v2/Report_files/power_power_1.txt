@@ -1,16 +1,16 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version     : Vivado v.2025.1 (win64) Build 6140274 Thu May 22 00:12:29 MDT 2025
-| Date             : Sun Jul  5 02:52:46 2026
+| Date             : Sun Jul  5 21:53:42 2026
 | Host             : DESKTOP-3PR7CHN running 64-bit major release  (build 9200)
-| Command          : report_power -file C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/vivado/hexacore_v2/Report_files/power_power_1.txt -xpe C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/vivado/hexacore_v2/power_power_1.xpe -name power_1
+| Command          : report_power -file C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/vivado/hexacore_v2/Report_files/power_power_1.txt -name power_1
 | Design           : nexys_a7_top
 | Device           : xc7a100tcsg324-1
-| Design State     : synthesized
+| Design State     : routed
 | Grade            : commercial
 | Process          : typical
 | Characterization : Production
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Power Report
 
@@ -30,14 +30,14 @@ Table of Contents
 ----------
 
 +--------------------------+--------------+
-| Total On-Chip Power (W)  | 0.275        |
+| Total On-Chip Power (W)  | 0.307        |
 | Design Power Budget (W)  | Unspecified* |
 | Power Budget Margin (W)  | NA           |
-| Dynamic (W)              | 0.178        |
+| Dynamic (W)              | 0.209        |
 | Device Static (W)        | 0.098        |
 | Effective TJA (C/W)      | 4.6          |
-| Max Ambient (C)          | 83.7         |
-| Junction Temperature (C) | 26.3         |
+| Max Ambient (C)          | 83.6         |
+| Junction Temperature (C) | 26.4         |
 | Confidence Level         | Low          |
 | Setting File             | ---          |
 | Simulation Activity File | ---          |
@@ -52,18 +52,18 @@ Table of Contents
 +--------------------------+-----------+----------+-----------+-----------------+
 | On-Chip                  | Power (W) | Used     | Available | Utilization (%) |
 +--------------------------+-----------+----------+-----------+-----------------+
-| Clocks                   |     0.020 |        3 |       --- |             --- |
-| Slice Logic              |     0.058 |    12611 |       --- |             --- |
-|   LUT as Logic           |     0.033 |     2854 |     63400 |            4.50 |
+| Clocks                   |     0.014 |        3 |       --- |             --- |
+| Slice Logic              |     0.061 |    12599 |       --- |             --- |
+|   LUT as Logic           |     0.036 |     3024 |     63400 |            4.77 |
 |   LUT as Distributed RAM |     0.020 |     4096 |     19000 |           21.56 |
 |   F7/F8 Muxes            |     0.005 |     3877 |     63400 |            6.12 |
+|   Register               |    <0.001 |     1479 |    126800 |            1.17 |
 |   CARRY4                 |    <0.001 |       74 |     15850 |            0.47 |
-|   Register               |    <0.001 |     1484 |    126800 |            1.17 |
-|   Others                 |     0.000 |       14 |       --- |             --- |
-| Signals                  |     0.077 |     3670 |       --- |             --- |
-| I/O                      |     0.022 |       31 |       210 |           14.76 |
+|   Others                 |     0.000 |        8 |       --- |             --- |
+| Signals                  |     0.123 |     4519 |       --- |             --- |
+| I/O                      |     0.011 |       28 |       210 |           13.33 |
 | Static Power             |     0.098 |          |           |                 |
-| Total                    |     0.275 |          |           |                 |
+| Total                    |     0.307 |          |           |                 |
 +--------------------------+-----------+----------+-----------+-----------------+
 
 
@@ -73,9 +73,9 @@ Table of Contents
 +-----------+-------------+-----------+-------------+------------+-------------+-------------+------------+
 | Source    | Voltage (V) | Total (A) | Dynamic (A) | Static (A) | Powerup (A) | Budget (A)  | Margin (A) |
 +-----------+-------------+-----------+-------------+------------+-------------+-------------+------------+
-| Vccint    |       1.000 |     0.171 |       0.156 |      0.015 |       NA    | Unspecified | NA         |
-| Vccaux    |       1.800 |     0.019 |       0.001 |      0.018 |       NA    | Unspecified | NA         |
-| Vcco33    |       3.300 |     0.010 |       0.006 |      0.004 |       NA    | Unspecified | NA         |
+| Vccint    |       1.000 |     0.213 |       0.198 |      0.016 |       NA    | Unspecified | NA         |
+| Vccaux    |       1.800 |     0.019 |       0.000 |      0.018 |       NA    | Unspecified | NA         |
+| Vcco33    |       3.300 |     0.007 |       0.003 |      0.004 |       NA    | Unspecified | NA         |
 | Vcco25    |       2.500 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
 | Vcco18    |       1.800 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
 | Vcco15    |       1.500 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
@@ -95,7 +95,7 @@ Table of Contents
 +-----------------------------+------------+--------------------------------------------------------+------------------------------------------------------------------------------------------------------------+
 | User Input Data             | Confidence | Details                                                | Action                                                                                                     |
 +-----------------------------+------------+--------------------------------------------------------+------------------------------------------------------------------------------------------------------------+
-| Design implementation state | Low        | Design is synthesized                                  | Accuracy of the tool is not optimal until design is fully placed and routed                                |
+| Design implementation state | High       | Design is routed                                       |                                                                                                            |
 | Clock nodes activity        | High       | User specified more than 95% of clocks                 |                                                                                                            |
 | I/O nodes activity          | Low        | More than 75% of inputs are missing user specification | Provide missing input activity with simulation results or by editing the "By Resource Type -> I/Os" view   |
 | Internal nodes activity     | Medium     | User specified less than 25% of internal nodes         | Provide missing internal nodes activity with simulation results or by editing the "By Resource Type" views |
@@ -139,17 +139,18 @@ Table of Contents
 3.1 By Hierarchy
 ----------------
 
-+---------------+-----------+
-| Name          | Power (W) |
-+---------------+-----------+
-| nexys_a7_top  |     0.178 |
-|   u_soc       |     0.155 |
-|     u_core    |     0.155 |
-|       u_alu   |     0.011 |
-|       u_brcmp |     0.002 |
-|       u_dmem  |     0.047 |
-|       u_imem  |     0.012 |
-|       u_rf    |     0.009 |
-+---------------+-----------+
++-----------------+-----------+
+| Name            | Power (W) |
++-----------------+-----------+
+| nexys_a7_top    |     0.209 |
+|   u_soc         |     0.197 |
+|     u_core      |     0.197 |
+|       u_alu     |     0.013 |
+|       u_aluctrl |     0.001 |
+|       u_brcmp   |     0.002 |
+|       u_dmem    |     0.051 |
+|       u_imem    |     0.016 |
+|       u_rf      |     0.011 |
++-----------------+-----------+
 
 

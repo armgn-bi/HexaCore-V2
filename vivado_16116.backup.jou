@@ -1,0 +1,24 @@
+#-----------------------------------------------------------
+# Vivado v2025.1 (64-bit)
+# SW Build 6140274 on Thu May 22 00:12:29 MDT 2025
+# IP Build 6138677 on Thu May 22 03:10:11 MDT 2025
+# SharedData Build 6139179 on Tue May 20 17:58:58 MDT 2025
+# Start of session at: Sun Jul  5 21:38:48 2026
+# Process ID         : 16116
+# Current directory  : C:/Users/DELL/Desktop/Yazilim/HexaCore-V2
+# Command line       : vivado.exe -log vivado_synth.log -mode batch -s source C:/Program Files/Git/C U s e r v e   / Y e s t e r t  6  4   P r o j e c t  / Y e s t i    H e  x a  c  o r e  -- V  2  0 2    5   .  1    / v  i  v  a  d o     / h  e  x  a  c  o  r  e   _  v  2   .   r  u  n  s   _  1                    / n  e x   e   _  s  _ y  _ t  1   _  n e  x  s _  1   _  n e  x  _ s  _  t  h   _  _ n  e  x  _ s _ t  h   _ _  n  e  x  _ s _ t  _ h  _   _x ______\
+# Log file           : C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/vivado_synth.log
+# Journal file       : C:/Users/DELL/Desktop/Yazilim/HexaCore-V2\vivado.jou
+# Running On         : DESKTOP-3PR7CHN
+# Platform           : Windows Server 2016 or Windows 10
+# Operating System   : 26300
+# Processor Detail   : AMD Ryzen 7 5825U with Radeon Graphics         
+# CPU Frequency      : 1996 MHz
+# CPU Physical cores : 8
+# CPU Logical cores  : 16
+# Host memory        : 16483 MB
+# Swap memory        : 16642 MB
+# Total Virtual      : 33126 MB
+# Available Virtual  : 7941 MB
+#-----------------------------------------------------------
+source source
