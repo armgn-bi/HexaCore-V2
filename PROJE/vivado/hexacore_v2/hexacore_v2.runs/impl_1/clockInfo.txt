@@ -1,8 +1,8 @@
 -------------------------------------
 | Tool Version : Vivado v.2025.1
-| Date         : Mon Apr 27 01:01:55 2026
+| Date         : Sun Jul  5 03:53:06 2026
 | Host         : DESKTOP-3PR7CHN
-| Design       : design_1
+| Design       : checkpoint_nexys_a7_top
 | Device       : xc7a100t-csg324-1--
 -------------------------------------
 

@@ -27,7 +27,7 @@ module uart_fifo #(
 
   // Pointers
   logic [ADDR_WIDTH:0] wr_ptr, rd_ptr;
-  logic [ADDR_WIDTH-0] wr_ptr_next, rd_ptr_next;
+  logic [ADDR_WIDTH:0] wr_ptr_next, rd_ptr_next;
 
   // Full/Empty detection
   assign full_o  = (wr_ptr[ADDR_WIDTH] != rd_ptr[ADDR_WIDTH]) &&

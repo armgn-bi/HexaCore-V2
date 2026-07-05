@@ -25,7 +25,7 @@ else
 fi
 export LD_LIBRARY_PATH
 
-HD_PWD='C:/Users/DELL/Downloads/HexaCore-V2/PROJE/vivado/hexacore_v2/hexacore_v2.runs/synth_1'
+HD_PWD='C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/vivado/hexacore_v2/hexacore_v2.runs/synth_1'
 cd "$HD_PWD"
 
 HD_LOG=runme.log

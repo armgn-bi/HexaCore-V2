@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<GenRun Id="synth_1" LaunchPart="xc7a100tcsg324-1" LaunchTime="1777240813">
+<GenRun Id="synth_1" LaunchPart="xc7a100tcsg324-1" LaunchTime="1783212659" LaunchIncrCheckpoint="$PSRCDIR/utils_1/imports/synth_1/nexys_a7_top.dcp">
   <File Type="PA-TCL" Name="nexys_a7_top.tcl"/>
   <File Type="RDS-PROPCONSTRS" Name="nexys_a7_top_drc_synth.rpt"/>
   <File Type="REPORTS-TCL" Name="nexys_a7_top_reports.tcl"/>
@@ -88,6 +88,13 @@
         <Attr Name="UsedIn" Val="simulation"/>
       </FileInfo>
     </File>
+    <File Path="$PPRDIR/../../rtl/i2c/axi_i2c.sv">
+      <FileInfo>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
     <File Path="$PPRDIR/../../rtl/bus/axi_interconnect.sv">
       <FileInfo>
         <Attr Name="UsedIn" Val="synthesis"/>
@@ -103,6 +110,20 @@
       </FileInfo>
     </File>
     <File Path="$PPRDIR/../../rtl/bus/axi_master_if.sv">
+      <FileInfo>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PPRDIR/../../rtl/spi/axi_spi.sv">
+      <FileInfo>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PPRDIR/../../rtl/uart/axi_uart.sv">
       <FileInfo>
         <Attr Name="UsedIn" Val="synthesis"/>
         <Attr Name="UsedIn" Val="implementation"/>
@@ -158,6 +179,13 @@
         <Attr Name="UsedIn" Val="simulation"/>
       </FileInfo>
     </File>
+    <File Path="$PPRDIR/../../rtl/i2c/i2c_master.sv">
+      <FileInfo>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
     <File Path="$PPRDIR/../../rtl/imem.sv">
       <FileInfo>
         <Attr Name="UsedIn" Val="synthesis"/>
@@ -194,6 +222,34 @@
       </FileInfo>
     </File>
     <File Path="$PPRDIR/../../rtl/top/soc_top.sv">
+      <FileInfo>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PPRDIR/../../rtl/spi/spi_master.sv">
+      <FileInfo>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PPRDIR/../../rtl/uart/uart_fifo.sv">
+      <FileInfo>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PPRDIR/../../rtl/uart/uart_rx.sv">
+      <FileInfo>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PPRDIR/../../rtl/uart/uart_tx.sv">
       <FileInfo>
         <Attr Name="UsedIn" Val="synthesis"/>
         <Attr Name="UsedIn" Val="implementation"/>
@@ -238,14 +294,20 @@
   </FileSet>
   <FileSet Name="utils" Type="Utils" RelSrcDir="$PSRCDIR/utils_1" RelGenDir="$PGENDIR/utils_1">
     <Filter Type="Utils"/>
+    <File Path="$PSRCDIR/utils_1/imports/synth_1/nexys_a7_top.dcp">
+      <FileInfo>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedInSteps" Val="synth_1"/>
+        <Attr Name="AutoDcp" Val="1"/>
+      </FileInfo>
+    </File>
     <Config>
       <Option Name="TopAutoSet" Val="TRUE"/>
     </Config>
   </FileSet>
   <Strategy Version="1" Minor="2">
-    <StratHandle Name="Flow_RuntimeOptimized" Flow="Vivado Synthesis 2025">
-      <Desc>Trades off Performance and Area for better Runtime.</Desc>
-    </StratHandle>
+    <StratHandle Name="Flow_RuntimeOptimized" Flow="Vivado Synthesis 2025"/>
     <Step Id="synth_design">
       <Option Id="Directive">0</Option>
       <Option Id="FlattenHierarchy">1</Option>

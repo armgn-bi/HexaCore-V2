@@ -4,7 +4,7 @@
 
 set TIME_start [clock seconds] 
 namespace eval ::optrace {
-  variable script "C:/Users/DELL/Downloads/HexaCore-V2/PROJE/vivado/hexacore_v2/hexacore_v2.runs/synth_1/nexys_a7_top.tcl"
+  variable script "C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/vivado/hexacore_v2/hexacore_v2.runs/synth_1/nexys_a7_top.tcl"
   variable category "vivado_synth"
 }
 
@@ -58,56 +58,63 @@ if {$::dispatch::connected} {
 OPTRACE "synth_1" START { ROLLUP_AUTO }
 set_param chipscope.maxJobs 4
 set_param general.usePosixSpawnForFork 1
-set_param xicom.use_bs_reader 1
 OPTRACE "Creating in-memory project" START { }
 create_project -in_memory -part xc7a100tcsg324-1
 
 set_param project.singleFileAddWarning.threshold 0
 set_param project.compositeFile.enableAutoGeneration 0
 set_param synth.vivado.isSynthRun true
-set_property webtalk.parent_dir C:/Users/DELL/Downloads/HexaCore-V2/PROJE/vivado/hexacore_v2/hexacore_v2.cache/wt [current_project]
-set_property parent.project_path C:/Users/DELL/Downloads/HexaCore-V2/PROJE/vivado/hexacore_v2/hexacore_v2.xpr [current_project]
+set_property webtalk.parent_dir C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/vivado/hexacore_v2/hexacore_v2.cache/wt [current_project]
+set_property parent.project_path C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/vivado/hexacore_v2/hexacore_v2.xpr [current_project]
 set_property default_lib xil_defaultlib [current_project]
 set_property target_language Verilog [current_project]
-set_property ip_output_repo c:/Users/DELL/Downloads/HexaCore-V2/PROJE/vivado/hexacore_v2/hexacore_v2.cache/ip [current_project]
+set_property ip_output_repo c:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/vivado/hexacore_v2/hexacore_v2.cache/ip [current_project]
 set_property ip_cache_permissions {read write} [current_project]
 OPTRACE "Creating in-memory project" END { }
 OPTRACE "Adding files" START { }
 read_mem {
-  C:/Users/DELL/Downloads/HexaCore-V2/PROJE/tb/imem_base.mem
-  C:/Users/DELL/Downloads/HexaCore-V2/PROJE/tb/dmem.mem
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/tb/imem_base.mem
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/tb/dmem.mem
 }
 read_verilog -library xil_defaultlib -sv {
-  C:/Users/DELL/Downloads/HexaCore-V2/PROJE/rtl/riscv_pkg.sv
-  C:/Users/DELL/Downloads/HexaCore-V2/PROJE/rtl/alu.sv
-  C:/Users/DELL/Downloads/HexaCore-V2/PROJE/rtl/alu_control.sv
-  C:/Users/DELL/Downloads/HexaCore-V2/PROJE/rtl/bus/axi_pkg.sv
-  C:/Users/DELL/Downloads/HexaCore-V2/PROJE/rtl/bus/axi_dmem_slave.sv
-  C:/Users/DELL/Downloads/HexaCore-V2/PROJE/rtl/bus/axi_interconnect.sv
-  C:/Users/DELL/Downloads/HexaCore-V2/PROJE/rtl/bus/axi_lite_slave.sv
-  C:/Users/DELL/Downloads/HexaCore-V2/PROJE/rtl/bus/axi_master_if.sv
-  C:/Users/DELL/Downloads/HexaCore-V2/PROJE/rtl/branch_compare.sv
-  C:/Users/DELL/Downloads/HexaCore-V2/PROJE/rtl/dmem.sv
-  C:/Users/DELL/Downloads/HexaCore-V2/PROJE/rtl/dqn/dqn_accelerator.sv
-  C:/Users/DELL/Downloads/HexaCore-V2/PROJE/rtl/dqn/dqn_core.sv
-  C:/Users/DELL/Downloads/HexaCore-V2/PROJE/rtl/dsp/dsp_filter_wrapper.sv
-  C:/Users/DELL/Downloads/HexaCore-V2/PROJE/rtl/forwarding_unit.sv
-  C:/Users/DELL/Downloads/HexaCore-V2/PROJE/rtl/hazard_unit.sv
-  C:/Users/DELL/Downloads/HexaCore-V2/PROJE/rtl/imem.sv
-  C:/Users/DELL/Downloads/HexaCore-V2/PROJE/rtl/imm_gen.sv
-  C:/Users/DELL/Downloads/HexaCore-V2/PROJE/rtl/main_control.sv
-  C:/Users/DELL/Downloads/HexaCore-V2/PROJE/rtl/register_file.sv
-  C:/Users/DELL/Downloads/HexaCore-V2/PROJE/rtl/riscv_pipeline.sv
-  C:/Users/DELL/Downloads/HexaCore-V2/PROJE/rtl/top/soc_top.sv
-  C:/Users/DELL/Downloads/HexaCore-V2/PROJE/rtl/top/nexys_a7_top.sv
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/riscv_pkg.sv
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/alu.sv
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/alu_control.sv
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/bus/axi_pkg.sv
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/bus/axi_dmem_slave.sv
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/i2c/axi_i2c.sv
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/bus/axi_interconnect.sv
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/bus/axi_lite_slave.sv
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/bus/axi_master_if.sv
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/spi/axi_spi.sv
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/uart/axi_uart.sv
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/branch_compare.sv
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/dmem.sv
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/dqn/dqn_accelerator.sv
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/dqn/dqn_core.sv
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/dsp/dsp_filter_wrapper.sv
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/forwarding_unit.sv
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/hazard_unit.sv
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/i2c/i2c_master.sv
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/imem.sv
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/imm_gen.sv
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/main_control.sv
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/register_file.sv
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/riscv_pipeline.sv
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/top/soc_top.sv
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/spi/spi_master.sv
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/uart/uart_fifo.sv
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/uart/uart_rx.sv
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/uart/uart_tx.sv
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/top/nexys_a7_top.sv
 }
 read_verilog -library xil_defaultlib {
-  C:/Users/DELL/Downloads/HexaCore-V2/PROJE/rtl/dsp/Filter.v
-  C:/Users/DELL/Downloads/HexaCore-V2/PROJE/rtl/dsp/FilterCoef.v
-  C:/Users/DELL/Downloads/HexaCore-V2/PROJE/rtl/dsp/FilterTapSystolicPreAddWvlIn.v
-  C:/Users/DELL/Downloads/HexaCore-V2/PROJE/rtl/dsp/FilterTapSystolicWvldInC0.v
-  C:/Users/DELL/Downloads/HexaCore-V2/PROJE/rtl/dsp/dsphdl_FIRFilter.v
-  C:/Users/DELL/Downloads/HexaCore-V2/PROJE/rtl/dsp/subFilter.v
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/dsp/Filter.v
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/dsp/FilterCoef.v
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/dsp/FilterTapSystolicPreAddWvlIn.v
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/dsp/FilterTapSystolicWvldInC0.v
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/dsp/dsphdl_FIRFilter.v
+  C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/dsp/subFilter.v
 }
 OPTRACE "Adding files" END { }
 # Mark all dcp files as not used in implementation to prevent them from being
@@ -118,10 +125,12 @@ OPTRACE "Adding files" END { }
 foreach dcp [get_files -quiet -all -filter file_type=="Design\ Checkpoint"] {
   set_property used_in_implementation false $dcp
 }
-read_xdc C:/Users/DELL/Downloads/HexaCore-V2/PROJE/constraints/nexys_a7.xdc
-set_property used_in_implementation false [get_files C:/Users/DELL/Downloads/HexaCore-V2/PROJE/constraints/nexys_a7.xdc]
+read_xdc C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/constraints/nexys_a7.xdc
+set_property used_in_implementation false [get_files C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/constraints/nexys_a7.xdc]
 
 set_param ips.enableIPCacheLiteLoad 1
+
+read_checkpoint -auto_incremental -incremental C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/vivado/hexacore_v2/hexacore_v2.srcs/utils_1/imports/synth_1/nexys_a7_top.dcp
 close [open __synthesis_is_running__ w]
 
 OPTRACE "synth_design" START { }

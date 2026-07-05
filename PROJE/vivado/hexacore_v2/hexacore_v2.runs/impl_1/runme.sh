@@ -25,7 +25,7 @@ else
 fi
 export LD_LIBRARY_PATH
 
-HD_PWD='C:/Users/DELL/Downloads/HexaCore-V2/PROJE/vivado/hexacore_v2/hexacore_v2.runs/impl_1'
+HD_PWD='C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/vivado/hexacore_v2/hexacore_v2.runs/impl_1'
 cd "$HD_PWD"
 
 HD_LOG=runme.log
@@ -42,7 +42,7 @@ EAStep()
 }
 
 # pre-commands:
-/bin/touch .write_bitstream.begin.rst
+/bin/touch .init_design.begin.rst
 EAStep vivado -log nexys_a7_top.vdi -applog -m64 -product Vivado -messageDb vivado.pb -mode batch -source nexys_a7_top.tcl -notrace
 
 

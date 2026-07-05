@@ -1,7 +1,7 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version     : Vivado v.2025.1 (win64) Build 6140274 Thu May 22 00:12:29 MDT 2025
-| Date             : Mon Apr 27 01:04:08 2026
+| Date             : Sun Jul  5 03:58:12 2026
 | Host             : DESKTOP-3PR7CHN running 64-bit major release  (build 9200)
 | Command          : report_power -file nexys_a7_top_power_routed.rpt -pb nexys_a7_top_power_summary_routed.pb -rpx nexys_a7_top_power_routed.rpx
 | Design           : nexys_a7_top
@@ -30,11 +30,11 @@ Table of Contents
 ----------
 
 +--------------------------+--------------+
-| Total On-Chip Power (W)  | 0.315        |
+| Total On-Chip Power (W)  | 0.312        |
 | Design Power Budget (W)  | Unspecified* |
 | Power Budget Margin (W)  | NA           |
-| Dynamic (W)              | 0.217        |
-| Device Static (W)        | 0.098        |
+| Dynamic (W)              | 0.207        |
+| Device Static (W)        | 0.105        |
 | Effective TJA (C/W)      | 4.6          |
 | Max Ambient (C)          | 83.6         |
 | Junction Temperature (C) | 26.4         |
@@ -52,18 +52,18 @@ Table of Contents
 +--------------------------+-----------+----------+-----------+-----------------+
 | On-Chip                  | Power (W) | Used     | Available | Utilization (%) |
 +--------------------------+-----------+----------+-----------+-----------------+
-| Clocks                   |     0.012 |        3 |       --- |             --- |
-| Slice Logic              |     0.061 |    12621 |       --- |             --- |
-|   LUT as Logic           |     0.036 |     2880 |     63400 |            4.54 |
+| Clocks                   |     0.014 |        3 |       --- |             --- |
+| Slice Logic              |     0.060 |    12612 |       --- |             --- |
+|   LUT as Logic           |     0.035 |     2880 |     63400 |            4.54 |
 |   LUT as Distributed RAM |     0.020 |     4096 |     19000 |           21.56 |
 |   F7/F8 Muxes            |     0.005 |     3877 |     63400 |            6.12 |
-|   Register               |    <0.001 |     1501 |    126800 |            1.18 |
+|   Register               |    <0.001 |     1492 |    126800 |            1.18 |
 |   CARRY4                 |    <0.001 |       74 |     15850 |            0.47 |
 |   Others                 |     0.000 |        8 |       --- |             --- |
-| Signals                  |     0.122 |     4534 |       --- |             --- |
-| I/O                      |     0.022 |       29 |       210 |           13.81 |
-| Static Power             |     0.098 |          |           |                 |
-| Total                    |     0.315 |          |           |                 |
+| Signals                  |     0.118 |     4529 |       --- |             --- |
+| I/O                      |     0.015 |       29 |       210 |           13.81 |
+| Static Power             |     0.105 |          |           |                 |
+| Total                    |     0.312 |          |           |                 |
 +--------------------------+-----------+----------+-----------+-----------------+
 
 
@@ -73,11 +73,11 @@ Table of Contents
 +-----------+-------------+-----------+-------------+------------+-------------+-------------+------------+
 | Source    | Voltage (V) | Total (A) | Dynamic (A) | Static (A) | Powerup (A) | Budget (A)  | Margin (A) |
 +-----------+-------------+-----------+-------------+------------+-------------+-------------+------------+
-| Vccint    |       1.000 |     0.211 |       0.195 |      0.016 |       NA    | Unspecified | NA         |
+| Vccint    |       1.000 |     0.208 |       0.192 |      0.016 |       NA    | Unspecified | NA         |
 | Vccaux    |       1.800 |     0.019 |       0.001 |      0.018 |       NA    | Unspecified | NA         |
-| Vcco33    |       3.300 |     0.010 |       0.006 |      0.004 |       NA    | Unspecified | NA         |
+| Vcco33    |       3.300 |     0.007 |       0.003 |      0.004 |       NA    | Unspecified | NA         |
 | Vcco25    |       2.500 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
-| Vcco18    |       1.800 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
+| Vcco18    |       1.800 |     0.006 |       0.002 |      0.004 |       NA    | Unspecified | NA         |
 | Vcco15    |       1.500 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
 | Vcco135   |       1.350 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
 | Vcco12    |       1.200 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
@@ -142,14 +142,14 @@ Table of Contents
 +-----------------+-----------+
 | Name            | Power (W) |
 +-----------------+-----------+
-| nexys_a7_top    |     0.217 |
-|   u_soc         |     0.195 |
-|     u_core      |     0.195 |
-|       u_alu     |     0.013 |
+| nexys_a7_top    |     0.207 |
+|   u_soc         |     0.192 |
+|     u_core      |     0.192 |
+|       u_alu     |     0.012 |
 |       u_aluctrl |     0.001 |
 |       u_brcmp   |     0.002 |
 |       u_dmem    |     0.050 |
-|       u_imem    |     0.018 |
+|       u_imem    |     0.016 |
 |       u_rf      |     0.011 |
 +-----------------+-----------+
 

@@ -111,7 +111,7 @@ module axi_spi #(
       if (s_axi_awvalid_i && s_axi_awready_o) begin
         awaddr_q <= s_axi_awaddr_i;
         awvalid_q <= 1'b1;
-      end else if (s_axi_bvalid_i && s_axi_bready_i) begin
+      end else if (bvalid_q && s_axi_bready_i) begin
         awvalid_q <= 1'b0;
       end
     end
@@ -130,7 +130,7 @@ module axi_spi #(
         wdata_q <= s_axi_wdata_i;
         wstrb_q <= s_axi_wstrb_i;
         wvalid_q <= 1'b1;
-      end else if (s_axi_bvalid_i && s_axi_bready_i) begin
+      end else if (bvalid_q && s_axi_bready_i) begin
         wvalid_q <= 1'b0;
       end
     end
@@ -163,7 +163,7 @@ module axi_spi #(
       if (s_axi_arvalid_i && s_axi_arready_o) begin
         araddr_q <= s_axi_araddr_i;
         arvalid_q <= 1'b1;
-      end else if (s_axi_rvalid_i && s_axi_rready_i) begin
+      end else if (rvalid_q && s_axi_rready_i) begin
         arvalid_q <= 1'b0;
       end
     end

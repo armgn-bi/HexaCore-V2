@@ -3,12 +3,12 @@
 # SW Build 6140274 on Thu May 22 00:12:29 MDT 2025
 # IP Build 6138677 on Thu May 22 03:10:11 MDT 2025
 # SharedData Build 6139179 on Tue May 20 17:58:58 MDT 2025
-# Start of session at: Mon Apr 27 01:01:24 2026
-# Process ID         : 22584
-# Current directory  : C:/Users/DELL/Downloads/HexaCore-V2/PROJE/vivado/hexacore_v2/hexacore_v2.runs/impl_1
-# Command line       : vivado.exe -log nexys_a7_top.vdi -applog -product Vivado -messageDb vivado.pb -mode batch -source nexys_a7_top.tcl -notrace
-# Log file           : C:/Users/DELL/Downloads/HexaCore-V2/PROJE/vivado/hexacore_v2/hexacore_v2.runs/impl_1/nexys_a7_top.vdi
-# Journal file       : C:/Users/DELL/Downloads/HexaCore-V2/PROJE/vivado/hexacore_v2/hexacore_v2.runs/impl_1\vivado.jou
+# Start of session at: Sat Jul  4 22:01:13 2026
+# Process ID         : 28716
+# Current directory  : C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/spi
+# Command line       : vivado.exe -log vivado_test.log -product Vivado -mode batch -messageDb vivado.pb -notrace -source hexacore_v2.runs/synth_1/nexys_a7_top.tcl
+# Log file           : C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/spi/vivado_test.log
+# Journal file       : C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/spi\vivado.jou
 # Running On         : DESKTOP-3PR7CHN
 # Platform           : Windows Server 2016 or Windows 10
 # Operating System   : 26300
@@ -19,6 +19,6 @@
 # Host memory        : 16483 MB
 # Swap memory        : 16642 MB
 # Total Virtual      : 33126 MB
-# Available Virtual  : 9888 MB
+# Available Virtual  : 7978 MB
 #-----------------------------------------------------------
-source nexys_a7_top.tcl -notrace
+source hexacore_v2.runs/synth_1/nexys_a7_top.tcl -notrace

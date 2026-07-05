@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<GenRun Id="impl_1" LaunchPart="xc7a100tcsg324-1" LaunchTime="1777240813">
+<GenRun Id="impl_1" LaunchPart="xc7a100tcsg324-1" LaunchTime="1783212746">
+  <File Type="ROUTE-BUS-SKEW" Name="nexys_a7_top_bus_skew_routed.rpt"/>
+  <File Type="PA-DCP" Name="nexys_a7_top.dcp"/>
   <File Type="ROUTE-PWR" Name="nexys_a7_top_power_routed.rpt"/>
   <File Type="PA-TCL" Name="nexys_a7_top.tcl"/>
   <File Type="ROUTE-PWR-SUM" Name="nexys_a7_top_power_summary_routed.pb"/>
@@ -26,7 +28,6 @@
   <File Type="PLACE-CTRL" Name="nexys_a7_top_control_sets_placed.rpt"/>
   <File Type="PLACE-SIMILARITY" Name="nexys_a7_top_incremental_reuse_placed.rpt"/>
   <File Type="PLACE-PRE-SIMILARITY" Name="nexys_a7_top_incremental_reuse_pre_placed.rpt"/>
-  <File Type="BG-BIN" Name="nexys_a7_top.bin"/>
   <File Type="PLACE-TIMING" Name="nexys_a7_top_timing_summary_placed.rpt"/>
   <File Type="ROUTE-PWR-RPX" Name="nexys_a7_top_power_routed.rpx"/>
   <File Type="PLACE-RQA-PB" Name="nexys_a7_top_rqa_placed.pb"/>
@@ -52,7 +53,6 @@
   <File Type="ROUTE-TIMING-RPX" Name="nexys_a7_top_timing_summary_routed.rpx"/>
   <File Type="ROUTE-SIMILARITY" Name="nexys_a7_top_incremental_reuse_routed.rpt"/>
   <File Type="ROUTE-CLK" Name="nexys_a7_top_clock_utilization_routed.rpt"/>
-  <File Type="ROUTE-BUS-SKEW" Name="nexys_a7_top_bus_skew_routed.rpt"/>
   <File Type="ROUTE-BUS-SKEW-PB" Name="nexys_a7_top_bus_skew_routed.pb"/>
   <File Type="ROUTE-BUS-SKEW-RPX" Name="nexys_a7_top_bus_skew_routed.rpx"/>
   <File Type="POSTROUTE-PHYSOPT-DCP" Name="nexys_a7_top_postroute_physopt.dcp"/>
@@ -64,6 +64,7 @@
   <File Type="BG-BIT" Name="nexys_a7_top.bit"/>
   <File Type="POSTROUTE-PHYSOPT-BUS-SKEW-PB" Name="nexys_a7_top_bus_skew_postroute_physopted.pb"/>
   <File Type="POSTROUTE-PHYSOPT-BUS-SKEW-RPX" Name="nexys_a7_top_bus_skew_postroute_physopted.rpx"/>
+  <File Type="BG-BIN" Name="nexys_a7_top.bin"/>
   <File Type="BITSTR-MSK" Name="nexys_a7_top.msk"/>
   <File Type="BITSTR-RBT" Name="nexys_a7_top.rbt"/>
   <File Type="BITSTR-NKY" Name="nexys_a7_top.nky"/>
@@ -190,6 +191,13 @@
         <Attr Name="UsedIn" Val="simulation"/>
       </FileInfo>
     </File>
+    <File Path="$PPRDIR/../../rtl/i2c/axi_i2c.sv">
+      <FileInfo>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
     <File Path="$PPRDIR/../../rtl/bus/axi_interconnect.sv">
       <FileInfo>
         <Attr Name="UsedIn" Val="synthesis"/>
@@ -205,6 +213,20 @@
       </FileInfo>
     </File>
     <File Path="$PPRDIR/../../rtl/bus/axi_master_if.sv">
+      <FileInfo>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PPRDIR/../../rtl/spi/axi_spi.sv">
+      <FileInfo>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PPRDIR/../../rtl/uart/axi_uart.sv">
       <FileInfo>
         <Attr Name="UsedIn" Val="synthesis"/>
         <Attr Name="UsedIn" Val="implementation"/>
@@ -260,6 +282,13 @@
         <Attr Name="UsedIn" Val="simulation"/>
       </FileInfo>
     </File>
+    <File Path="$PPRDIR/../../rtl/i2c/i2c_master.sv">
+      <FileInfo>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
     <File Path="$PPRDIR/../../rtl/imem.sv">
       <FileInfo>
         <Attr Name="UsedIn" Val="synthesis"/>
@@ -296,6 +325,34 @@
       </FileInfo>
     </File>
     <File Path="$PPRDIR/../../rtl/top/soc_top.sv">
+      <FileInfo>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PPRDIR/../../rtl/spi/spi_master.sv">
+      <FileInfo>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PPRDIR/../../rtl/uart/uart_fifo.sv">
+      <FileInfo>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PPRDIR/../../rtl/uart/uart_rx.sv">
+      <FileInfo>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PPRDIR/../../rtl/uart/uart_tx.sv">
       <FileInfo>
         <Attr Name="UsedIn" Val="synthesis"/>
         <Attr Name="UsedIn" Val="implementation"/>
@@ -340,6 +397,14 @@
   </FileSet>
   <FileSet Name="utils" Type="Utils" RelSrcDir="$PSRCDIR/utils_1" RelGenDir="$PGENDIR/utils_1">
     <Filter Type="Utils"/>
+    <File Path="$PSRCDIR/utils_1/imports/synth_1/nexys_a7_top.dcp">
+      <FileInfo>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedInSteps" Val="synth_1"/>
+        <Attr Name="AutoDcp" Val="1"/>
+      </FileInfo>
+    </File>
     <Config>
       <Option Name="TopAutoSet" Val="TRUE"/>
     </Config>

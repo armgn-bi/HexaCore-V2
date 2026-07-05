@@ -1,0 +1,284 @@
+      <File Path="$PPRDIR/../../rtl/uart/axi_uart.sv">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../rtl/branch_compare.sv">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../rtl/dmem.sv">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../rtl/dqn/dqn_accelerator.sv">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../rtl/dqn/dqn_core.sv">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../rtl/dsp/dsp_filter_wrapper.sv">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../rtl/forwarding_unit.sv">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../rtl/hazard_unit.sv">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../rtl/imem.sv">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../rtl/imm_gen.sv">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../rtl/main_control.sv">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../rtl/register_file.sv">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../rtl/riscv_pipeline.sv">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../rtl/top/soc_top.sv">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../rtl/uart/uart_fifo.sv">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../rtl/uart/uart_rx.sv">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../rtl/uart/uart_tx.sv">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../rtl/top/nexys_a7_top.sv">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../tb/imem_base.mem">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../../tb/dmem.mem">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <Config>
+        <Option Name="DesignMode" Val="RTL"/>
+        <Option Name="TopModule" Val="nexys_a7_top"/>
+      </Config>
+    </FileSet>
+    <FileSet Name="constrs_1" Type="Constrs" RelSrcDir="$PSRCDIR/constrs_1" RelGenDir="$PGENDIR/constrs_1">
+      <Filter Type="Constrs"/>
+      <File Path="$PPRDIR/../../constraints/nexys_a7.xdc">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+        </FileInfo>
+      </File>
+      <Config>
+        <Option Name="ConstrsType" Val="XDC"/>
+      </Config>
+    </FileSet>
+    <FileSet Name="sim_1" Type="SimulationSrcs" RelSrcDir="$PSRCDIR/sim_1" RelGenDir="$PGENDIR/sim_1">
+      <Filter Type="Srcs"/>
+      <Config>
+        <Option Name="DesignMode" Val="RTL"/>
+        <Option Name="TopModule" Val="nexys_a7_top"/>
+        <Option Name="TopLib" Val="xil_defaultlib"/>
+        <Option Name="TopAutoSet" Val="TRUE"/>
+        <Option Name="TransportPathDelay" Val="0"/>
+        <Option Name="TransportIntDelay" Val="0"/>
+        <Option Name="SelectedSimModel" Val="rtl"/>
+        <Option Name="PamDesignTestbench" Val=""/>
+        <Option Name="PamDutBypassFile" Val="xil_dut_bypass"/>
+        <Option Name="PamSignalDriverFile" Val="xil_bypass_driver"/>
+        <Option Name="PamPseudoTop" Val="pseudo_tb"/>
+        <Option Name="SrcSet" Val="sources_1"/>
+        <Option Name="CosimPdi" Val=""/>
+        <Option Name="CosimPlatform" Val=""/>
+        <Option Name="CosimElf" Val=""/>
+        <Option Name="Dmv" Val=""/>
+      </Config>
+    </FileSet>
+    <FileSet Name="utils_1" Type="Utils" RelSrcDir="$PSRCDIR/utils_1" RelGenDir="$PGENDIR/utils_1">
+      <Filter Type="Utils"/>
+      <File Path="$PSRCDIR/utils_1/imports/synth_1/nexys_a7_top.dcp">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedInSteps" Val="synth_1"/>
+          <Attr Name="AutoDcp" Val="1"/>
+        </FileInfo>
+      </File>
+      <Config>
+        <Option Name="TopAutoSet" Val="TRUE"/>
+      </Config>
+    </FileSet>
+  </FileSets>
+  <Simulators>
+    <Simulator Name="XSim">
+      <Option Name="Description" Val="Vivado Simulator"/>
+      <Option Name="CompiledLib" Val="0"/>
+    </Simulator>
+    <Simulator Name="ModelSim">
+      <Option Name="Description" Val="ModelSim Simulator"/>
+    </Simulator>
+    <Simulator Name="Questa">
+      <Option Name="Description" Val="Questa Advanced Simulator"/>
+    </Simulator>
+    <Simulator Name="Riviera">
+      <Option Name="Description" Val="Riviera-PRO Simulator"/>
+    </Simulator>
+    <Simulator Name="ActiveHDL">
+      <Option Name="Description" Val="Active-HDL Simulator"/>
+    </Simulator>
+  </Simulators>
+  <Runs Version="1" Minor="22">
+    <Run Id="synth_1" Type="Ft3:Synth" SrcSet="sources_1" Part="xc7a100tcsg324-1" ConstrsSet="constrs_1" Description="Trades off Performance and Area for better Runtime." AutoIncrementalCheckpoint="true" IncrementalCheckpoint="$PSRCDIR/utils_1/imports/synth_1/nexys_a7_top.dcp" WriteIncrSynthDcp="false" State="current" Dir="$PRUNDIR/synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/synth_1" ParallelReportGen="true">
+      <Strategy Version="1" Minor="2">
+        <StratHandle Name="Flow_RuntimeOptimized" Flow="Vivado Synthesis 2025"/>
+        <Step Id="synth_design">
+          <Option Id="Directive">0</Option>
+          <Option Id="FlattenHierarchy">1</Option>
+          <Option Id="FsmExtraction">0</Option>
+        </Step>
+      </Strategy>
+      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
+      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2025"/>
+      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
+      <RQSFiles/>
+    </Run>
+    <Run Id="impl_1" Type="Ft2:EntireDesign" Part="xc7a100tcsg324-1" ConstrsSet="constrs_1" Description="Similar to Peformance_Explore, but enables the physical optimization step (phys_opt_design) with the Explore directive after routing." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" State="current" SynthRun="synth_1" IncludeInArchive="true" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/impl_1" LaunchOptions="-jobs 8 " AutoRQSDir="$PSRCDIR/utils_1/imports/impl_1" ParallelReportGen="true">
+      <Strategy Version="1" Minor="2">
+        <StratHandle Name="Performance_ExplorePostRoutePhysOpt" Flow="Vivado Implementation 2025"/>
+        <Step Id="init_design"/>
+        <Step Id="opt_design">
+          <Option Id="Directive">0</Option>
+        </Step>
+        <Step Id="power_opt_design"/>
+        <Step Id="place_design">
+          <Option Id="Directive">0</Option>
+        </Step>
+        <Step Id="post_place_power_opt_design"/>
+        <Step Id="phys_opt_design">
+          <Option Id="Directive">0</Option>
+        </Step>
+        <Step Id="route_design">
+          <Option Id="Directive">0</Option>
+          <Option Id="MoreOptsStr"><![CDATA[-tns_cleanup]]></Option>
+        </Step>
+        <Step Id="post_route_phys_opt_design" EnableStepBool="1">
+          <Option Id="Directive">0</Option>
+        </Step>
+        <Step Id="write_bitstream"/>
+      </Strategy>
+      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2025"/>
+      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
+      <RQSFiles/>
+    </Run>
+  </Runs>
+  <Board/>
+  <DashboardSummary Version="1" Minor="0">
+    <Dashboards>
+      <Dashboard Name="default_dashboard">
+        <Gadgets>
+          <Gadget Name="drc_1" Type="drc" Version="1" Row="2" Column="0">
+            <GadgetParam Name="REPORTS" Type="string_list" Value="impl_1#impl_1_route_report_drc_0 "/>
+          </Gadget>
+          <Gadget Name="methodology_1" Type="methodology" Version="1" Row="2" Column="1">
+            <GadgetParam Name="REPORTS" Type="string_list" Value="impl_1#impl_1_route_report_methodology_0 "/>
+          </Gadget>
+          <Gadget Name="power_1" Type="power" Version="1" Row="1" Column="0">
+            <GadgetParam Name="REPORTS" Type="string_list" Value="impl_1#impl_1_route_report_power_0 "/>
+          </Gadget>
+          <Gadget Name="timing_1" Type="timing" Version="1" Row="0" Column="1">
+            <GadgetParam Name="REPORTS" Type="string_list" Value="impl_1#impl_1_route_report_timing_summary_0 "/>
+          </Gadget>
+          <Gadget Name="utilization_1" Type="utilization" Version="1" Row="0" Column="0">
+            <GadgetParam Name="REPORTS" Type="string_list" Value="synth_1#synth_1_synth_report_utilization_0 "/>
+            <GadgetParam Name="RUN.STEP" Type="string" Value="synth_design"/>
+            <GadgetParam Name="RUN.TYPE" Type="string" Value="synthesis"/>
+          </Gadget>
+          <Gadget Name="utilization_2" Type="utilization" Version="1" Row="1" Column="1">
+            <GadgetParam Name="REPORTS" Type="string_list" Value="impl_1#impl_1_place_report_utilization_0 "/>
+          </Gadget>
+        </Gadgets>
+      </Dashboard>
+      <CurrentDashboard>default_dashboard</CurrentDashboard>
+    </Dashboards>
+  </DashboardSummary>
+</Project>
