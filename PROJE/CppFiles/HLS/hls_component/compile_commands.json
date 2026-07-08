@@ -1,0 +1,38 @@
+[
+  {
+    "directory": "C:\\Users\\DELL\\turkcell_fatura_asistani\\LowLevel-CNN\\CppFiles\\HLS\\hls_component",
+    "arguments": [
+      "C:\\Xilinx\\2025.1\\Vitis\\vcxx\\libexec\\clang++.exe",
+      "--sysroot=C:\\Xilinx\\2025.1\\Vitis\\tps\\mingw\\10.0.0\\win64.o\\nt",
+      "-fhls",
+      "-hls-syn-headers-dir=C:\\Xilinx\\2025.1\\Vitis\\common\\technology\\autopilot",
+      "-c",
+      "C:\\Users\\DELL\\turkcell_fatura_asistani\\LowLevel-CNN\\CppFiles\\HLS\\hls_component\\..\\maze_accel.cpp"
+    ],
+    "file": "C:\\Users\\DELL\\turkcell_fatura_asistani\\LowLevel-CNN\\CppFiles\\HLS\\hls_component\\..\\maze_accel.cpp"
+  },
+  {
+    "directory": "C:\\Users\\DELL\\turkcell_fatura_asistani\\LowLevel-CNN\\CppFiles\\HLS\\hls_component",
+    "arguments": [
+      "C:\\Xilinx\\2025.1\\Vitis\\vcxx\\libexec\\clang++.exe",
+      "--sysroot=C:\\Xilinx\\2025.1\\Vitis\\tps\\mingw\\10.0.0\\win64.o\\nt",
+      "-fhls",
+      "-hls-syn-headers-dir=C:\\Xilinx\\2025.1\\Vitis\\common\\technology\\autopilot",
+      "-c",
+      "C:\\Users\\DELL\\turkcell_fatura_asistani\\LowLevel-CNN\\CppFiles\\HLS\\hls_component\\..\\Qlearning_2.cpp"
+    ],
+    "file": "C:\\Users\\DELL\\turkcell_fatura_asistani\\LowLevel-CNN\\CppFiles\\HLS\\hls_component\\..\\Qlearning_2.cpp"
+  },
+  {
+    "directory": "C:\\Users\\DELL\\turkcell_fatura_asistani\\LowLevel-CNN\\CppFiles\\HLS\\hls_component",
+    "arguments": [
+      "C:\\Xilinx\\2025.1\\Vitis\\vcxx\\libexec\\clang++.exe",
+      "--sysroot=C:\\Xilinx\\2025.1\\Vitis\\tps\\mingw\\10.0.0\\win64.o\\nt",
+      "-fhls-tb",
+      "-hls-sim-headers-dir=C:\\Xilinx\\2025.1\\Vitis\\include",
+      "-c",
+      "C:\\Users\\DELL\\turkcell_fatura_asistani\\LowLevel-CNN\\CppFiles\\HLS\\hls_component\\..\\tb_maze_accel.cpp"
+    ],
+    "file": "C:\\Users\\DELL\\turkcell_fatura_asistani\\LowLevel-CNN\\CppFiles\\HLS\\hls_component\\..\\tb_maze_accel.cpp"
+  }
+]
