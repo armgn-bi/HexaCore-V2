@@ -1,0 +1,71 @@
+﻿â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  BOLUM 7.3: DQN Core Standalone Simulasyonu (24 test)
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+KOMUT     : xsim tb_dqn_standalone_snap --runall --onerror quit
+TARIH     : 2026-07-09 08:36:03
+SURE      : 3.04 saniye
+EXIT CODE : 0
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+
+****** xsim v2025.1 (64-bit)
+  **** SW Build 6140274 on Thu May 22 00:12:29 MDT 2025
+  **** IP Build 6138677 on Thu May 22 03:10:11 MDT 2025
+  **** SharedData Build 6139179 on Tue May 20 17:58:58 MDT 2025
+  **** Start of session at: Thu Jul  9 08:36:01 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/tb_dqn_standalone_snap/xsim_script.tcl
+# xsim {tb_dqn_standalone_snap} -autoloadwcfg -runall -onerror quit
+Time resolution is 1 ps
+run -all
+ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ
+  DQN Core Standalone Test
+ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ
+
+ÔöÇÔöÇ TEST 1: Inference (Positif Girisler) ÔöÇÔöÇ
+[505000] PASS #1 q_val[0]=0.125 ÔÇö got=0x1000
+[505000] PASS #2 q_val[1]=0.0625 ÔÇö got=0x0800
+[505000] PASS #3 q_val[2]=0.1875 ÔÇö got=0x1800
+[505000] PASS #4 q_val[3]=0.03125 ÔÇö got=0x0400
+[505000] PASS #5 argmax=2 ÔÇö got=2
+[505000] PASS #6 q_max=0x1800 ÔÇö got=0x1800
+[505000] PASS #7 cycle_cnt > 0 ÔÇö got=1
+  Inference cycles = 33
+
+ÔöÇÔöÇ TEST 2: LeakyReLU (Negatif Giris) ÔöÇÔöÇ
+[865000] PASS #8 q_val[3] negatif ÔÇö got=1
+[865000] PASS #9 q_val[0] ayni ÔÇö got=0x1000
+[865000] PASS #10 q_val[2] ayni ÔÇö got=0x1800
+[865000] PASS #11 argmax hala 2 ÔÇö got=2
+
+ÔöÇÔöÇ TEST 3: Esit Girisler ÔöÇÔöÇ
+[1225000] PASS #12 esit q_val[0] ÔÇö got=0x1000
+[1225000] PASS #13 esit q_val[1] ÔÇö got=0x1000
+[1225000] PASS #14 esit q_val[2] ÔÇö got=0x1000
+[1225000] PASS #15 esit q_val[3] ÔÇö got=0x1000
+
+ÔöÇÔöÇ TEST 4: Soft Reset ÔöÇÔöÇ
+[1345000] PASS #16 busy after reset ÔÇö got=0
+[1345000] PASS #17 done after reset ÔÇö got=0
+
+ÔöÇÔöÇ TEST 5: Bias Testi ÔöÇÔöÇ
+[1705000] PASS #18 q_val[0] biasli ÔÇö got=0x2000
+[1705000] PASS #19 q_val[1] biassiz ÔÇö got=0x0800
+[1705000] PASS #20 argmax=0 (biasli) ÔÇö got=0
+
+ÔöÇÔöÇ TEST 6: Sifir Giris ÔöÇÔöÇ
+[2065000] PASS #21 sifir q_val[0] ÔÇö got=0x0000
+[2065000] PASS #22 sifir q_val[1] ÔÇö got=0x0000
+[2065000] PASS #23 sifir q_val[2] ÔÇö got=0x0000
+[2065000] PASS #24 sifir q_val[3] ÔÇö got=0x0000
+
+ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ
+  DQN Core Test: 24/24 PASS
+  Tum testler BASARILI
+ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ
+$finish called at time : 2065 ns : File "C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/tb/periph_tb/tb_dqn_core_standalone.sv" Line 253
+exit
+INFO: [Common 17-206] Exiting xsim at Thu Jul  9 08:36:03 2026...
+

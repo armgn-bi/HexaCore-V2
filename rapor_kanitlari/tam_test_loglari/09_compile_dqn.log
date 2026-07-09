@@ -1,0 +1,16 @@
+﻿â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  BOLUM 5.1: DQN AXI TB Derleme
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+KOMUT     : xvlog --sv -f filelist_dqn.f
+TARIH     : 2026-07-09 08:35:24
+SURE      : 1.23 saniye
+EXIT CODE : 0
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/dqn/dqn_core.sv" into library work
+INFO: [VRFC 10-311] analyzing module dqn_core
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/dqn/dqn_accelerator.sv" into library work
+INFO: [VRFC 10-311] analyzing module dqn_accelerator
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/tb/periph_tb/tb_dqn.sv" into library work
+INFO: [VRFC 10-311] analyzing module tb_dqn
+

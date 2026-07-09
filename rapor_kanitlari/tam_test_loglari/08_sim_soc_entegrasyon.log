@@ -1,0 +1,73 @@
+﻿â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  BOLUM 4.3: SoC Entegrasyon Simulasyonu (23 test)
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+KOMUT     : xsim tb_soc_integration_snap --runall --onerror quit
+TARIH     : 2026-07-09 08:35:23
+SURE      : 2.98 saniye
+EXIT CODE : 0
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+
+****** xsim v2025.1 (64-bit)
+  **** SW Build 6140274 on Thu May 22 00:12:29 MDT 2025
+  **** IP Build 6138677 on Thu May 22 03:10:11 MDT 2025
+  **** SharedData Build 6139179 on Tue May 20 17:58:58 MDT 2025
+  **** Start of session at: Thu Jul  9 08:35:21 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/tb_soc_integration_snap/xsim_script.tcl
+# xsim {tb_soc_integration_snap} -autoloadwcfg -runall -onerror quit
+Time resolution is 1 ps
+run -all
+
+ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ
+ SoC Entegrasyon Testi Baslatiliyor
+ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ
+
+ÔöÇÔöÇ TEST GRUBU 1: DMEM Yazma & Okuma ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+[35000] PASS #1 DMEM Word WR/RD @0x8001_0100 ÔÇö got=0xcafebabe
+[55000] PASS #2 DMEM Word WR/RD @0x8001_0200 ÔÇö got=0x12345678
+[65000] PASS #3 DMEM Re-read @0x8001_0100 ÔÇö got=0xcafebabe
+[85000] PASS #4 DMEM Zero WR/RD @0x8001_0300 ÔÇö got=0x00000000
+[105000] PASS #5 DMEM Max WR/RD @0x8001_0304 ÔÇö got=0xffffffff
+
+ÔöÇÔöÇ TEST GRUBU 2: DSP Register Eri┼şimi ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+[125000] PASS #6 DSP CTRL enable set ÔÇö got=0x00000001
+[135000] PASS #7 DSP STATUS initial ÔÇö got=0x00000000
+[155000] PASS #8 DSP DATA_IN readback ÔÇö got=0x00004000
+[225000] INFO: DSP STATUS after samples = 0x00000000 (out_valid=0)
+[235000] INFO: DSP DATA_OUT_L = 0x00000000
+[245000] INFO: DSP DATA_OUT_H = 0x00000000
+[271000] PASS #9 DSP CTRL soft_reset auto-clear ÔÇö got=0x00000000
+
+ÔöÇÔöÇ TEST GRUBU 3: Stub Slave SLVERR Kontrol├╝ ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+[279000] PASS #10 UART stub read data ÔÇö got=0xdeaddead
+[287000] PASS #11 SPI stub read data ÔÇö got=0xdeaddead
+[295000] PASS #12 I2C stub read data ÔÇö got=0xdeaddead
+[303000] PASS: UART stub write completed (SLVERR expected)
+
+ÔöÇÔöÇ TEST GRUBU 4: DMEM Ard─▒┼ş─▒k Eri┼şim ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+[393000] PASS #14 DMEM sequential[0] ÔÇö got=0xa0000000
+[403000] PASS #15 DMEM sequential[1] ÔÇö got=0xa0000001
+[413000] PASS #16 DMEM sequential[2] ÔÇö got=0xa0000002
+[423000] PASS #17 DMEM sequential[3] ÔÇö got=0xa0000003
+[433000] PASS #18 DMEM sequential[4] ÔÇö got=0xa0000004
+[443000] PASS #19 DMEM sequential[5] ÔÇö got=0xa0000005
+[453000] PASS #20 DMEM sequential[6] ÔÇö got=0xa0000006
+[463000] PASS #21 DMEM sequential[7] ÔÇö got=0xa0000007
+
+ÔöÇÔöÇ TEST GRUBU 5: DSP Ôåö DMEM ├çapraz Kontrol ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+[493000] PASS #22 DMEM after DSP access ÔÇö got=0xbeefdead
+[503000] PASS #23 DSP CTRL after DMEM access ÔÇö got=0x00000001
+
+ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ
+ SoC Entegrasyon Testi TAMAMLANDI
+ Toplam: 23  |  PASS: 23  |  FAIL: 0
+ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ
+[TB] TUM TESTLER BASARILI.
+
+$finish called at time : 503 ns : File "C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/tb/soc_tb/tb_soc_integration.sv" Line 532
+exit
+INFO: [Common 17-206] Exiting xsim at Thu Jul  9 08:35:23 2026...
+

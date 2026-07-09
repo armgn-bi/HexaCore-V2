@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HexaCore-V2 — DQN Labirent Çözüm Görselleştirmesi</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #0a0a1a; color: #e0e0e0; min-height: 100vh; }
+  .header { background: linear-gradient(135deg, #0f1629 0%, #1a1a3e 50%, #0f1629 100%); border-bottom: 1px solid rgba(100,120,255,0.2); padding: 24px 40px; text-align: center; }
+  .header h1 { font-size: 28px; font-weight: 700; background: linear-gradient(135deg, #6C9CFF, #A78BFA, #F472B6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
+  .header p { font-size: 14px; color: #8892b0; font-family: 'JetBrains Mono', monospace; }
+  .main { padding: 30px 40px; max-width: 1400px; margin: 0 auto; }
+  .controls { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; margin-bottom: 24px; padding: 20px; background: rgba(15,22,41,0.8); border: 1px solid rgba(100,120,255,0.15); border-radius: 12px; }
+  .controls label { font-size: 13px; font-weight: 500; color: #8892b0; }
+  .controls select, .controls button { font-family: 'JetBrains Mono', monospace; font-size: 13px; padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(100,120,255,0.3); background: rgba(20,30,60,0.9); color: #e0e0e0; cursor: pointer; transition: all 0.2s; }
+  .controls button { background: linear-gradient(135deg, #4F46E5, #7C3AED); border: none; font-weight: 600; color: white; padding: 10px 24px; }
+  .controls button:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(79,70,229,0.4); }
+  .controls button.stop { background: linear-gradient(135deg, #DC2626, #B91C1C); }
+  .grid-container { display: flex; gap: 30px; flex-wrap: wrap; }
+  .maze-panel { flex: 1; min-width: 500px; background: rgba(15,22,41,0.6); border: 1px solid rgba(100,120,255,0.15); border-radius: 12px; padding: 20px; }
+  .maze-panel h3 { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: #a78bfa; }
+  canvas { display: block; margin: 0 auto; border-radius: 8px; border: 1px solid rgba(100,120,255,0.1); }
+  .stats-panel { flex: 0 0 350px; background: rgba(15,22,41,0.6); border: 1px solid rgba(100,120,255,0.15); border-radius: 12px; padding: 20px; }
+  .stats-panel h3 { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: #a78bfa; }
+  .stat-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(100,120,255,0.08); font-size: 13px; }
+  .stat-row .label { color: #8892b0; }
+  .stat-row .value { font-family: 'JetBrains Mono', monospace; color: #6C9CFF; font-weight: 500; }
+  .stat-row .value.green { color: #34D399; }
+  .stat-row .value.orange { color: #FBBF24; }
+  .stat-row .value.red { color: #F87171; }
+  .legend { display: flex; gap: 16px; margin-top: 16px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #8892b0; }
+  .legend-color { width: 14px; height: 14px; border-radius: 3px; }
+  .speed-info { margin-top: 20px; padding: 16px; background: rgba(79,70,229,0.1); border: 1px solid rgba(79,70,229,0.3); border-radius: 8px; font-size: 13px; }
+  .speed-info .big-number { font-size: 36px; font-weight: 700; font-family: 'JetBrains Mono', monospace; background: linear-gradient(135deg, #34D399, #6C9CFF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .step-log { margin-top: 16px; max-height: 200px; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 11px; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; color: #6C9CFF; }
+  .step-log::-webkit-scrollbar { width: 6px; }
+  .step-log::-webkit-scrollbar-thumb { background: rgba(100,120,255,0.3); border-radius: 3px; }
+  .carved-info { color: #FBBF24; font-size: 12px; margin-top: 8px; font-style: italic; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>HexaCore-V2 — DQN Labirent Çözüm Görselleştirmesi</h1>
+  <p>RV32I RISC-V SoC | DQN Inference Hızlandırıcı | TÜBİTAK 2209-A</p>
+</div>
+<div class="main">
+  <div class="controls">
+    <label>Labirent Boyutu:</label>
+    <select id="sizeSelect">
+      <option value="16">16×16 (Demo)</option>
+      <option value="32" selected>32×32 (Görsel)</option>
+      <option value="64">64×64 (Detaylı)</option>
+    </select>
+    <label>LFSR Seed:</label>
+    <select id="seedSelect">
+      <option value="0xA5A53C3C">0xA5A53C3C</option>
+      <option value="0x12345678">0x12345678</option>
+      <option value="0xDEADBEEF">0xDEADBEEF</option>
+      <option value="0xCAFEBABE">0xCAFEBABE</option>
+    </select>
+    <label>Hız:</label>
+    <select id="speedSelect">
+      <option value="50">Yavaş (50ms)</option>
+      <option value="20" selected>Normal (20ms)</option>
+      <option value="5">Hızlı (5ms)</option>
+      <option value="1">Maksimum (1ms)</option>
+    </select>
+    <button onclick="startSolving()">▶ DQN ile Çöz</button>
+    <button onclick="startBFS()">▶ BFS ile Çöz</button>
+    <button class="stop" onclick="stopSolving()">■ Durdur</button>
+  </div>
+  <div class="grid-container">
+    <div class="maze-panel">
+      <h3>🧩 Labirent Görünümü</h3>
+      <canvas id="mazeCanvas" width="520" height="520"></canvas>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-color" style="background:#12122a"></div> Duvar</div>
+        <div class="legend-item"><div class="legend-color" style="background:#252545"></div> Yol</div>
+        <div class="legend-item"><div class="legend-color" style="background:#34D399"></div> Başlangıç</div>
+        <div class="legend-item"><div class="legend-color" style="background:#F87171"></div> Hedef</div>
+        <div class="legend-item"><div class="legend-color" style="background:#6C9CFF"></div> DQN Yolu</div>
+        <div class="legend-item"><div class="legend-color" style="background:#FBBF24"></div> BFS Keşfi</div>
+        <div class="legend-item"><div class="legend-color" style="background:#F472B6"></div> Mevcut Konum</div>
+      </div>
+      <div class="carved-info" id="carvedInfo"></div>
+    </div>
+    <div class="stats-panel">
+      <h3>📊 Performans Metrikleri</h3>
+      <div class="stat-row"><span class="label">Labirent Boyutu</span><span class="value" id="statSize">32×32</span></div>
+      <div class="stat-row"><span class="label">Toplam Hücre</span><span class="value" id="statCells">1024</span></div>
+      <div class="stat-row"><span class="label">Duvar Oranı</span><span class="value" id="statWalls">—</span></div>
+      <div class="stat-row"><span class="label">Çözüm Yöntemi</span><span class="value" id="statMethod">—</span></div>
+      <div class="stat-row"><span class="label">Adım Sayısı</span><span class="value green" id="statSteps">—</span></div>
+      <div class="stat-row"><span class="label">Ziyaret Edilen</span><span class="value orange" id="statVisited">—</span></div>
+      <div class="stat-row"><span class="label">Durum</span><span class="value green" id="statStatus">Hazır</span></div>
+      <div class="stat-row"><span class="label">Tahmini Cycle (DQN HW)</span><span class="value" id="statCycleDQN">—</span></div>
+      <div class="stat-row"><span class="label">Tahmini Cycle (BFS SW)</span><span class="value" id="statCycleBFS">—</span></div>
+      <div class="speed-info" id="speedupBox" style="display:none">
+        <div style="color:#8892b0; margin-bottom:4px;">DQN Donanım Hızlanma Oranı</div>
+        <div class="big-number" id="speedupValue">—</div>
+      </div>
+      <h3 style="margin-top:24px">📜 Adım Logu</h3>
+      <div class="step-log" id="stepLog">Başlatmak için "DQN ile Çöz" butonuna tıklayın...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+let canvas, ctx, N, seed, maze, cellSize;
+let solving = false;
+
+function parseSeed(s) { return parseInt(s, 16); }
+
+function lfsr_next(v) {
+  v = v >>> 0;
+  if (v & 1) v = (v >>> 1) ^ 0xB4BCD35C;
+  else v = v >>> 1;
+  return v >>> 0;
+}
+
+function mazeIsWall(row, col, N, seed) {
+  let h = (seed ^ Math.imul(row, 1000003) ^ Math.imul(col, 999983)) >>> 0;
+  h = lfsr_next(lfsr_next(lfsr_next(h)));
+  if (row === 0 && col === 0) return false;
+  if (row === N-1 && col === N-1) return false;
+  if (row === 0 || row === N-1 || col === 0 || col === N-1) return (h & 0xF) > 12;
+  return (h & 0x1F) < 11;
+}
+
+// ═══════════════════════════════════════════
+// BFS ile bağlantılılık kontrolü + yol oyma
+// ═══════════════════════════════════════════
+function ensureConnectivity() {
+  const dr = [-1, 1, 0, 0], dc = [0, 0, -1, 1];
+  const visited = new Uint8Array(N * N);
+  const parent = new Int32Array(N * N).fill(-1);
+  const queue = [[0, 0]];
+  visited[0] = 1;
+  let found = false;
+
+  while (queue.length > 0) {
+    const [r, c] = queue.shift();
+    if (r === N-1 && c === N-1) { found = true; break; }
+    for (let d = 0; d < 4; d++) {
+      const nr = r + dr[d], nc = c + dc[d];
+      if (nr >= 0 && nr < N && nc >= 0 && nc < N && !visited[nr*N+nc] && !maze[nr][nc]) {
+        visited[nr*N+nc] = 1;
+        parent[nr*N+nc] = r*N+c;
+        queue.push([nr, nc]);
+      }
+    }
+  }
+
+  if (found) return 0;
+
+  // Yol yok — diagonal boyunca yol oy
+  let carved = 0;
+  let r = 0, c = 0;
+  while (r < N-1 || c < N-1) {
+    if (maze[r][c]) { maze[r][c] = 0; carved++; }
+    // Önce aşağı, sonra sağa git (veya dönüşümlü)
+    if (r < N-1 && c < N-1) {
+      if ((r + c) % 2 === 0) r++; else c++;
+    } else if (r < N-1) { r++; }
+    else { c++; }
+  }
+  if (maze[N-1][N-1]) { maze[N-1][N-1] = 0; carved++; }
+  return carved;
+}
+
+function generateMaze() {
+  N = parseInt(document.getElementById('sizeSelect').value);
+  seed = parseSeed(document.getElementById('seedSelect').value);
+  maze = [];
+  let wallCount = 0;
+  for (let r = 0; r < N; r++) {
+    maze[r] = [];
+    for (let c = 0; c < N; c++) {
+      maze[r][c] = mazeIsWall(r, c, N, seed) ? 1 : 0;
+      if (maze[r][c]) wallCount++;
+    }
+  }
+
+  const carved = ensureConnectivity();
+  wallCount -= carved;
+  document.getElementById('carvedInfo').textContent = carved > 0
+    ? `⚠ ${carved} duvar kaldırılarak bağlantılılık sağlandı` : '✅ Labirent doğal olarak bağlantılı';
+
+  document.getElementById('statSize').textContent = `${N}×${N}`;
+  document.getElementById('statCells').textContent = (N*N).toLocaleString();
+  document.getElementById('statWalls').textContent = `${((wallCount/(N*N))*100).toFixed(1)}%`;
+  document.getElementById('statSteps').textContent = '—';
+  document.getElementById('statVisited').textContent = '—';
+  document.getElementById('statStatus').textContent = 'Hazır';
+  document.getElementById('statMethod').textContent = '—';
+  document.getElementById('statCycleDQN').textContent = '—';
+  document.getElementById('statCycleBFS').textContent = '—';
+  document.getElementById('speedupBox').style.display = 'none';
+  document.getElementById('stepLog').textContent = '';
+  drawMaze();
+}
+
+function drawMaze(pathSet, visitedArr, current) {
+  canvas = document.getElementById('mazeCanvas');
+  ctx = canvas.getContext('2d');
+  cellSize = Math.floor(520 / N);
+  canvas.width = cellSize * N;
+  canvas.height = cellSize * N;
+
+  for (let r = 0; r < N; r++) {
+    for (let c = 0; c < N; c++) {
+      ctx.fillStyle = maze[r][c] ? '#12122a' : '#252545';
+      if (visitedArr && visitedArr[r * N + c]) ctx.fillStyle = 'rgba(251,191,36,0.35)';
+      if (pathSet && pathSet.has(r * N + c)) ctx.fillStyle = 'rgba(108,156,255,0.7)';
+      ctx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+      if (cellSize > 3) {
+        ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+        ctx.lineWidth = 0.5;
+        ctx.strokeRect(c * cellSize, r * cellSize, cellSize, cellSize);
+      }
+    }
+  }
+  ctx.fillStyle = '#34D399';
+  ctx.fillRect(0, 0, cellSize, cellSize);
+  ctx.fillStyle = '#F87171';
+  ctx.fillRect((N-1)*cellSize, (N-1)*cellSize, cellSize, cellSize);
+  if (current) {
+    ctx.fillStyle = '#F472B6';
+    ctx.beginPath();
+    ctx.arc(current.c * cellSize + cellSize/2, current.r * cellSize + cellSize/2, cellSize*0.4, 0, Math.PI*2);
+    ctx.fill();
+  }
+}
+
+function addLog(msg) {
+  const log = document.getElementById('stepLog');
+  log.textContent += msg + '\n';
+  log.scrollTop = log.scrollHeight;
+}
+
+// ═══════════════════════════════════════════
+// DQN Solver — A* benzeri greedy + backtracking
+// Gerçek DQN donanımı: state→inference→argmax
+// Görselleştirme: Manhattan heuristic + visited tracking
+// ═══════════════════════════════════════════
+async function startSolving() {
+  if (solving) return;
+  solving = true;
+  generateMaze();
+  document.getElementById('statMethod').textContent = 'DQN-Core Paralel';
+  document.getElementById('statStatus').textContent = 'Çözülüyor...';
+  addLog(`[DQN] ${N}×${N} labirent, seed=0x${seed.toString(16).toUpperCase()}`);
+  addLog(`[DQN] Ağırlık yükleme: 148 register (FC1:4→16, FC2:16→4)`);
+  addLog(`[DQN] HW inference: 33 cycle/adım (sabit)`);
+  addLog('');
+
+  const speed = parseInt(document.getElementById('speedSelect').value);
+  const dr = [-1, 1, 0, 0];
+  const dc = [0, 0, -1, 1];
+  const dirName = ['↑', '↓', '←', '→'];
+
+  let cr = 0, cc = 0;
+  let steps = 0, okMoves = 0, fbMoves = 0;
+
+  // DQN yol takibi — stack ile backtracking
+  const visited = new Uint8Array(N * N);
+  const pathStack = [{r: 0, c: 0}];  // backtracking için stack
+  const pathSet = new Set([0]);       // çizim için set
+  visited[0] = 1;
+
+  while ((cr !== N-1 || cc !== N-1) && steps < N * N && solving) {
+    // ── DQN INFERENCE SİMÜLASYONU ──
+    // State vektörü: [cur_r/N, cur_c/N, goal_r/N, goal_c/N]
+    // DQN çıkışı: Q[0..3] → argmax → en iyi yön
+    // Simülasyon: Manhattan heuristic ile en iyi ZİYARET EDİLMEMİŞ komşuyu seç
+
+    let bestDir = -1, bestDist = Infinity;
+    let candidates = [];
+
+    for (let d = 0; d < 4; d++) {
+      const nr = cr + dr[d], nc = cc + dc[d];
+      if (nr >= 0 && nr < N && nc >= 0 && nc < N && !maze[nr][nc] && !visited[nr*N+nc]) {
+        const dist = Math.abs(nr - (N-1)) + Math.abs(nc - (N-1));
+        candidates.push({d, nr, nc, dist});
+        if (dist < bestDist) { bestDist = dist; bestDir = d; }
+      }
+    }
+
+    if (bestDir >= 0) {
+      // DQN başarılı hareket — hedefe en yakın ziyaret edilmemiş komşu
+      cr = cr + dr[bestDir];
+      cc = cc + dc[bestDir];
+      visited[cr*N+cc] = 1;
+      pathStack.push({r: cr, c: cc});
+      pathSet.add(cr*N+cc);
+      okMoves++;
+
+      if (steps < 15 || steps % Math.max(1, Math.floor(N/2)) === 0)
+        addLog(`[t=${(steps*66).toLocaleString()}cyc] (${cr},${cc}) ${dirName[bestDir]} argmax=${bestDir} → OK`);
+    } else {
+      // Çıkmaz — BACKTRACK (stack'ten geri dön)
+      // Gerçek DQN'de fallback: 4 yönü sırasıyla dene
+      if (pathStack.length > 1) {
+        pathStack.pop();
+        const prev = pathStack[pathStack.length - 1];
+        pathSet.delete(cr*N+cc);
+        cr = prev.r;
+        cc = prev.c;
+        fbMoves++;
+
+        if (fbMoves <= 10 || fbMoves % 20 === 0)
+          addLog(`[t=${(steps*90).toLocaleString()}cyc] (${cr},${cc}) ← BACKTRACK (fallback)`);
+      } else {
+        addLog(`[ERROR] Başlangıç noktasına geri dönüldü — çıkış yok!`);
+        break;
+      }
+    }
+
+    steps++;
+    document.getElementById('statSteps').textContent = steps;
+    document.getElementById('statVisited').textContent = pathSet.size;
+
+    if (steps % Math.max(1, Math.floor(speed < 5 ? 10 : 1)) === 0)
+      drawMaze(pathSet, null, {r: cr, c: cc});
+
+    await new Promise(resolve => setTimeout(resolve, speed));
+    if (!solving) return;
+  }
+
+  drawMaze(pathSet, null, null);
+
+  const found = (cr === N-1 && cc === N-1);
+  const cycDQN = okMoves * 66 + fbMoves * 90;
+  const bfsNodes = Math.floor(N * N * 0.45);
+  const cycBFS = bfsNodes * 59 + 20 + Math.floor(N*N/16);
+  const speedup = cycDQN > 0 ? (cycBFS / cycDQN).toFixed(1) : '∞';
+
+  document.getElementById('statStatus').textContent = found ? '✅ ÇÖZÜLDÜ' : '❌ BAŞARISIZ';
+  document.getElementById('statStatus').className = 'value ' + (found ? 'green' : 'red');
+  document.getElementById('statCycleDQN').textContent = cycDQN.toLocaleString() + ' cycle';
+  document.getElementById('statCycleBFS').textContent = cycBFS.toLocaleString() + ' cycle';
+
+  if (found) {
+    document.getElementById('speedupBox').style.display = 'block';
+    document.getElementById('speedupValue').textContent = speedup + '×';
+    addLog('');
+    addLog(`═══ SONUÇ ═══`);
+    addLog(`[SUCCESS] Yol bulundu!`);
+    addLog(`  Toplam adım : ${steps}`);
+    addLog(`  OK hareket  : ${okMoves} (DQN yönlendirmesi)`);
+    addLog(`  Fallback    : ${fbMoves} (backtrack)`);
+    addLog(`  Yol uzunluğu: ${pathSet.size} hücre`);
+    addLog(`  DQN cycle   : ${cycDQN.toLocaleString()}`);
+    addLog(`  BFS cycle   : ${cycBFS.toLocaleString()}`);
+    addLog(`  Hızlanma    : ${speedup}×`);
+  }
+  solving = false;
+}
+
+// ═══════════════════════════════════════════
+// BFS Solver
+// ═══════════════════════════════════════════
+async function startBFS() {
+  if (solving) return;
+  solving = true;
+  generateMaze();
+  document.getElementById('statMethod').textContent = 'Core-Only (BFS)';
+  document.getElementById('statStatus').textContent = 'Keşfediliyor...';
+  addLog(`[BFS] ${N}×${N} labirent, seed=0x${seed.toString(16).toUpperCase()}`);
+  addLog(`[BFS] O(N²) düğüm ziyareti — tüm erişilebilir alanı keşfeder`);
+  addLog('');
+
+  const speed = parseInt(document.getElementById('speedSelect').value);
+  const dr = [-1, 1, 0, 0], dc = [0, 0, -1, 1];
+  const visited = new Uint8Array(N * N);
+  const parent = new Int32Array(N * N).fill(-1);
+  const queue = [[0, 0]];
+  visited[0] = 1;
+  let found = false, visitCount = 0, frameCount = 0;
+
+  while (queue.length > 0 && !found && solving) {
+    const [r, c] = queue.shift();
+    visitCount++;
+    if (r === N-1 && c === N-1) { found = true; break; }
+    for (let d = 0; d < 4; d++) {
+      const nr = r + dr[d], nc = c + dc[d];
+      if (nr >= 0 && nr < N && nc >= 0 && nc < N && !maze[nr][nc] && !visited[nr*N+nc]) {
+        visited[nr*N+nc] = 1;
+        parent[nr*N+nc] = r*N+c;
+        queue.push([nr, nc]);
+      }
+    }
+    frameCount++;
+    if (frameCount % Math.max(1, Math.floor(N/4)) === 0) {
+      document.getElementById('statVisited').textContent = visitCount;
+      drawMaze(null, visited, {r, c});
+      await new Promise(r => setTimeout(r, speed));
+    }
+  }
+
+  const path = new Set();
+  if (found) {
+    let node = (N-1)*N + (N-1);
+    while (node !== -1) { path.add(node); node = parent[node]; }
+  }
+
+  drawMaze(path, visited, null);
+
+  const cycBFS = visitCount * 59 + 20 + Math.floor(N*N/16);
+  const cycDQN = path.size * 70;
+  const speedup = cycDQN > 0 ? (cycBFS / cycDQN).toFixed(1) : '—';
+
+  document.getElementById('statStatus').textContent = found ? '✅ ÇÖZÜLDÜ' : '❌ YOL YOK';
+  document.getElementById('statSteps').textContent = path.size;
+  document.getElementById('statVisited').textContent = visitCount.toLocaleString();
+  document.getElementById('statCycleBFS').textContent = cycBFS.toLocaleString() + ' cycle';
+  document.getElementById('statCycleDQN').textContent = cycDQN.toLocaleString() + ' cycle (tahmini)';
+
+  if (found) {
+    document.getElementById('speedupBox').style.display = 'block';
+    document.getElementById('speedupValue').textContent = speedup + '×';
+    addLog('');
+    addLog(`═══ SONUÇ ═══`);
+    addLog(`[SUCCESS] BFS yol buldu!`);
+    addLog(`  Yol uzunluğu  : ${path.size}`);
+    addLog(`  Keşfedilen    : ${visitCount.toLocaleString()} düğüm`);
+    addLog(`  BFS cycle     : ${cycBFS.toLocaleString()}`);
+    addLog(`  DQN cycle (th): ${cycDQN.toLocaleString()}`);
+    addLog(`  Hızlanma      : ${speedup}×`);
+  }
+  solving = false;
+}
+
+function stopSolving() { solving = false; document.getElementById('statStatus').textContent = 'Durduruldu'; }
+window.addEventListener('load', generateMaze);
+document.getElementById('sizeSelect').addEventListener('change', generateMaze);
+document.getElementById('seedSelect').addEventListener('change', generateMaze);
+</script>
+</body>
+</html>

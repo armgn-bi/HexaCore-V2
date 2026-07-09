@@ -1,0 +1,22 @@
+﻿â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  BOLUM 2.2: Core + Bus + SoC RTL Derleme (xvlog --sv)
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+KOMUT     : xvlog --sv --incr --relax -L work -f filelist_core.f
+TARIH     : 2026-07-09 08:35:08
+SURE      : 1.19 saniye
+EXIT CODE : 0
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/riscv_pkg.sv" into library work
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/bus/axi_pkg.sv" into library work
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/bus/axi_master_if.sv" into library work
+INFO: [VRFC 10-311] analyzing module axi_master_if
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/bus/axi_lite_slave.sv" into library work
+INFO: [VRFC 10-311] analyzing module axi_lite_slave
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/bus/axi_interconnect.sv" into library work
+INFO: [VRFC 10-311] analyzing module axi_interconnect
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/dqn/dqn_core.sv" into library work
+INFO: [VRFC 10-311] analyzing module dqn_core
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/rtl/dqn/dqn_accelerator.sv" into library work
+INFO: [VRFC 10-311] analyzing module dqn_accelerator
+

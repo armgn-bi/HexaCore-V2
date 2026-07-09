@@ -1,0 +1,37 @@
+﻿â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  BOLUM 4.2: SoC Entegrasyon Elaboration
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+KOMUT     : xelab --incr --relax --debug typical -L work tb_soc_integration -s tb_soc_integration_snap
+TARIH     : 2026-07-09 08:35:20
+SURE      : 4.34 saniye
+EXIT CODE : 0
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+Vivado Simulator v2025.1.0
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
+Running: C:/Xilinx/2025.1/Vivado/bin/unwrapped/win64.o/xelab.exe --incr --relax --debug typical -L work tb_soc_integration -s tb_soc_integration_snap 
+Multi-threading is on. Using 14 slave threads.
+Starting static elaboration
+Pass Through NonSizing Optimizer
+Completed static elaboration
+Starting simulation data flow analysis
+Completed simulation data flow analysis
+Time Resolution for simulation is 1ps
+Compiling package work.riscv_pkg
+Compiling package work.axi_pkg
+Compiling module work.axi_master_if_default
+Compiling module work.axi_interconnect_default
+Compiling module work.dmem(DMemInitFile="dmem.mem",BAS...
+Compiling module work.axi_dmem_slave(DMEM_INIT_FILE="d...
+Compiling module work.axi_lite_slave(ADDR_WIDTH=32,DAT...
+Compiling module work.FilterCoef
+Compiling module work.FilterTapSystolicWvldInC0
+Compiling module work.FilterTapSystolicPreAddWvlIn
+Compiling module work.subFilter
+Compiling module work.Filter
+Compiling module work.dsphdl_FIRFilter
+Compiling module work.dsp_filter_wrapper_default
+Compiling module work.tb_soc_integration
+Built simulation snapshot tb_soc_integration_snap
+
