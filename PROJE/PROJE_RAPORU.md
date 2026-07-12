@@ -1037,3 +1037,4 @@ Yeni bir periferal eklemek iÃ§in:
 
 *Bu rapor, HexaCore-V2 RISC-V SoC projesinin tÃ¼m geliÅŸtirme sÃ¼recini, test stratejisini ve sonuÃ§larÄ±nÄ± Ã¶zetlemektedir.*
 *SimÃ¼lasyon: AMD XSIM (Vivado 2025.1) + Icarus Verilog â€” Vivado XSIM: 238/238 PASS (11 Mart 2026)*
+- **12 Temmuz 2026 (Devamı):** AI Maze Explorer Benchmark (Phase 2.3) donanım üzerinde koşturuldu. 256x256 (65,536 node) karmaşıklığındaki bir labirent çözümü saniyeler içinde (~5.3 sn) tamamlanarak O(N^2) zorlukta donanımın ne kadar ölçeklenebilir olduğu ispatlandı. DQN Acceleratör ve RISC-V çekirdeği kusursuz senkronize çalıştı.

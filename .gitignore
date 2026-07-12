@@ -1,1 +1,30 @@
+# Vivado
+*.jou
+*.log
+*.str
+*.dir
+*.dcp
+*.pb
+*.rpt
+*.xml
+*.html
+*.zip
+.Xil/
+*.cache/
+*.hw/
+*.ip_user_files/
+*.runs/
+*.sim/
+*.srcs/
+__synthesis_is_complete__
+__synthesis_is_running__
+dfx_runtime.txt
+incr_synth_reason.pb
+
+# Python
+__pycache__/
+*.pyc
+
+# Old
 /oldfiles
+/vivadofiles
