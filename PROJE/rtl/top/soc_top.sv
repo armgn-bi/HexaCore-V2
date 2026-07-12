@@ -8,8 +8,8 @@ module soc_top
   import riscv_pkg::*;
   import axi_pkg::*;
 #(
-  parameter string IMEM_INIT_FILE = "C:/Users/DELL/Downloads/HexaCore-V2/PROJE/imem.mem",
-  parameter string DMEM_INIT_FILE = "C:/Users/DELL/Downloads/HexaCore-V2/PROJE/dmem.mem"
+  parameter string IMEM_INIT_FILE = "C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/imem_ai_maze_test.mem",
+  parameter string DMEM_INIT_FILE = "C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/dmem.mem"
 )(
   input  logic             clk_i,
   input  logic             rstn_i,
@@ -467,3 +467,12 @@ module soc_top
 
 endmodule// Force Synthesis 4
 // Force Synthesis 5 - Enable UART
+// Force Synthesis 6 - 30x30 Maze Update
+// Force Synthesis 7 - Scalability Benchmark
+// Force Synthesis 8 - HW Delay Loops
+// Force Synthesis 9 - Real DQN Test
+// Force Synthesis 10 - Real DQN Test with UART Polling
+// Force Synthesis 11 - DQN Test with Delay Loop Fix
+// Force Synthesis 12 - DQN Polling Hazard Fix
+ 
+

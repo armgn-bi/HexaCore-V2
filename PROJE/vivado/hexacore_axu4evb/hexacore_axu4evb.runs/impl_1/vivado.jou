@@ -3,8 +3,8 @@
 # SW Build 6140274 on Thu May 22 00:12:29 MDT 2025
 # IP Build 6138677 on Thu May 22 03:10:11 MDT 2025
 # SharedData Build 6139179 on Tue May 20 17:58:58 MDT 2025
-# Start of session at: Sun Jul 12 17:58:57 2026
-# Process ID         : 10216
+# Start of session at: Sun Jul 12 21:18:09 2026
+# Process ID         : 5188
 # Current directory  : C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/vivado/hexacore_axu4evb/hexacore_axu4evb.runs/impl_1
 # Command line       : vivado.exe -log axu4evb_top.vdi -applog -product Vivado -messageDb vivado.pb -mode batch -source axu4evb_top.tcl -notrace
 # Log file           : C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/vivado/hexacore_axu4evb/hexacore_axu4evb.runs/impl_1/axu4evb_top.vdi
@@ -19,6 +19,6 @@
 # Host memory        : 16483 MB
 # Swap memory        : 16642 MB
 # Total Virtual      : 33126 MB
-# Available Virtual  : 8020 MB
+# Available Virtual  : 5268 MB
 #-----------------------------------------------------------
 source axu4evb_top.tcl -notrace

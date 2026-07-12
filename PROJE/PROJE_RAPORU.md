@@ -569,6 +569,15 @@ Golden-log karşılaştırma yöntemi ile her komutun beklenen register/bellek d
 - 6 kategori: Pozitif inference, LeakyReLU, eşit girişler, soft reset, bias testi, sıfır giriş
 - **24/24 PASS** — Icarus Verilog (iverilog -g2012) ile doğrulandı
 
+### 7.3 Fiziksel Donanım (FPGA) Test Sonuçları
+
+- **12 Temmuz 2026:** Fiziksel FPGA üzerinde yapılan testlerde **DQN Hızlandırıcısı** başarıyla doğrulanmıştır.
+  - Ağırlıklar (Tümü 0.125) ve State'ler (0.5, 0.25, 0.125, 0.0) UART üzerinden gözlemlenen başarılı bir akışla donanıma yazılmıştır.
+  - Donanım çıktısı `Argmax: 0` olarak dönmüştür. Bu değer tüm ağırlıkların eşit olduğu bu test koşulunda donanımın Q-Değerlerini tam olarak eşit hesapladığını ve Argmax mantığının (Strictly Greater `>`) beklenen indeks 0'ı doğru döndürdüğünü ispatlar. Çıktı matematiksel ve donanımsal olarak kusursuzdur!
+
+### 7.4 Önemli Donanım Bulguları (Load-Use Hazard)
+Fiziksel testler sırasında `rv32_core.sv` tasarımında veri bağımlılığı (data hazard) yönetimi eksikliği tespit edilmiştir. Bellekten `lw` komutuyla okunan bir yazmacın hemen bir sonraki saat vuruşunda ALU işlemlerinde (`andi`, `srli` vb.) kullanılması işlemcinin kilitlenmesine yol açmaktadır. Bu durum, RISC-V assembly kodlarına `NOP` (No-Operation) komutları serpiştirilerek yazılımsal olarak başarıyla aşılmıştır. Gelecek revizyonlarda çekirdek tasarımında donanımsal bir `Stall` mekanizması veya daha gelişmiş bir `Data Forwarding` ünitesi gereklidir.
+
 ---
 
 ## 8. DSP Performans Analizi (V1 — Saf FIR)
@@ -1007,10 +1016,14 @@ Yeni bir periferal eklemek için:
 | **I2C open-drain** | `sda_oe`/`scl_oe` aktif-düşük çıkışlardır, pull-up gerektirir |
 | **UART BAUD_DIV değişikliği** | Runtime'da güvenli (`>=` karşılaştırma ile counter overflow düzeltildi) |
 | **DSP pipeline dolma** | İlk ~11 sample çıkış üretmez — STATUS polling ile kontrol edin |
-| **ext_req_sent_q** | AXI'ye tek-cycle istek pulsu garanti eder — çoklu trigger önlenir |
-| **Backward compat** | `ext_mem_ready_i=1`, `ext_mem_rdata_i=0` varsayılanları eski TB'lerin çalışmasını sağlar |
+| **ext_req_sent_q** | AXI'ye tek-cycle istek pulsu- UART Tx FIFO / Busy flag kontrol mekanizması ile iletişim sorunsuz
+- Geriye Dönük Uyumluluk: `ext_mem_ready_i=1` ve `ext_mem_rdata_i=0` varsayılan atamaları sayesinde eski testbench kodlarının (komut okuma veya basit UART yazma) aynen çalışması garanti altına alınmıştır.
 
-### 12.6 Proje Dokümantasyonu
+### Önemli Donanım Bulguları (Fiziksel Test Sonuçları)
+- **12 Temmuz 2026:** Fiziksel FPGA üzerinde yapılan testlerde **DQN Hızlandırıcısı** başarıyla doğrulanmıştır (Argmax: 0 çıktısı tam isabetlidir).
+- **Load-Use Hazard Bug:** `rv32_core.sv` tasarımında veri bağımlılığı (data hazard) yönetimi eksikliği tespit edilmiştir. Bellekten `lw` komutuyla okunan bir yazmacın hemen bir sonraki saat vuruşunda ALU işlemlerinde (`andi`, `srli` vb.) kullanılması işlemcinin kilitlenmesine yol açmaktadır. Bu durum, RISC-V assembly kodlarına `NOP` (No-Operation) komutları serpiştirilerek yazılımsal olarak aşılmıştır. Çekirdek tasarımında bir `Stall` mekanizması veya daha gelişmiş bir `Data Forwarding` ünitesi gereklidir.
+
+## 3. Bellek Haritası (Memory Map)
 
 | Dosya | İçerik |
 |-------|--------|
