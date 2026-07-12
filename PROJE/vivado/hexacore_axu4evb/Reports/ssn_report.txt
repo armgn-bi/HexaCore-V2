@@ -1,0 +1,22 @@
+# Simultaneously Switching Noise (SSN) Report
+# Version: 1.0
+# Created on: Sun Jul 12 22:32:04 2026
+# Result Name: ssn_1
+# Project Name: hexacore_axu4evb
+# Project Family: Zynq UltraScale+
+# Part: xczu4ev-sfvc784
+# Temperature Grade: industrial
+# SSN Data Version: Production
+# Package Version: PRODUCTION 1.2 10/30/2017
+# Package Pin Delay Version: PRODUCTION 1.0 4/14/2017
+
+IO Bank,VCCO,Signal Name,Pin Number,IO Standard,Slew Rate,Drive (mA),OUTPUT_IMPEDANCE, PRE_EMPHASIS,LVDS_PRE_EMPHASIS,OFFCHIP_TERM,Remaining Margin (%),Result, Notes
+43,3.3,PL_UART_TX,AA11,LVCMOS33,SLOW,12,,,,FP_VTT_50,97.5,PASS,
+44,3.3,PL_LED1,AE15,LVCMOS33,SLOW,12,,,,FP_VTT_50,97.5,PASS,
+
+
+# Reference Links
+# Safe to Ignore SSN Failure on MIG Designs - https://support.xilinx.com/s/article/36141
+# SSN Mitigation Strategy - http://www.xilinx.com/support/documentation/user_guides/ug571-ultrascale-selectio.pdf#search=%22SSO%22
+# Off-chip Terminations - http://www.xilinx.com/support/documentation/user_guides/ug571-ultrascale-selectio.pdf#search=%22SSO%22
+# Valid Property Combinations for Output Ports - http://www.xilinx.com/support/documentation/user_guides/ug571-ultrascale-selectio.pdf#search=%22 1-49 %22

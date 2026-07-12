@@ -56,7 +56,9 @@ if {$::dispatch::connected} {
 }
 
 OPTRACE "synth_1" START { ROLLUP_AUTO }
+set_param chipscope.maxJobs 4
 set_param general.usePosixSpawnForFork 1
+set_param xicom.use_bs_reader 1
 OPTRACE "Creating in-memory project" START { }
 create_project -in_memory -part xczu4ev-sfvc784-1-i
 
@@ -124,8 +126,6 @@ read_xdc C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/constraints/axu4evb_p.x
 set_property used_in_implementation false [get_files C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/constraints/axu4evb_p.xdc]
 
 set_param ips.enableIPCacheLiteLoad 1
-
-read_checkpoint -auto_incremental -incremental C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/vivado/hexacore_axu4evb/hexacore_axu4evb.srcs/utils_1/imports/synth_1/axu4evb_top.dcp
 close [open __synthesis_is_running__ w]
 
 OPTRACE "synth_design" START { }
