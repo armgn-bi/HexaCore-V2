@@ -1,0 +1,51 @@
+#-----------------------------------------------------------
+# Vivado v2025.1 (64-bit)
+# SW Build 6140274 on Thu May 22 00:12:29 MDT 2025
+# IP Build 6138677 on Thu May 22 03:10:11 MDT 2025
+# SharedData Build 6139179 on Tue May 20 17:58:58 MDT 2025
+# Start of session at: Fri Jul 10 08:37:02 2026
+# Process ID         : 26328
+# Current directory  : C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/vivado
+# Command line       : vivado.exe -mode batch -source create_axu4evb_project.tcl
+# Log file           : C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/vivado/vivado.log
+# Journal file       : C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/vivado\vivado.jou
+# Running On         : DESKTOP-3PR7CHN
+# Platform           : Windows Server 2016 or Windows 10
+# Operating System   : 26300
+# Processor Detail   : AMD Ryzen 7 5825U with Radeon Graphics         
+# CPU Frequency      : 1996 MHz
+# CPU Physical cores : 8
+# CPU Logical cores  : 16
+# Host memory        : 16483 MB
+# Swap memory        : 16642 MB
+# Total Virtual      : 33126 MB
+# Available Virtual  : 16137 MB
+#-----------------------------------------------------------
+source create_axu4evb_project.tcl
+# set project_name "hexacore_axu4evb"
+# set project_dir "./$project_name"
+# set part "xczu4ev-sfvc784-1-i"
+# create_project $project_name $project_dir -part $part -force
+create_project: Time (s): cpu = 00:00:07 ; elapsed = 00:00:07 . Memory (MB): peak = 513.652 ; gain = 213.387
+# add_files ../rtl/riscv_pkg.sv
+# add_files ../rtl/alu.sv
+# add_files ../rtl/alu_control.sv
+# add_files ../rtl/branch_compare.sv
+# add_files ../rtl/dmem.sv
+# add_files ../rtl/forwarding_unit.sv
+# add_files ../rtl/hazard_unit.sv
+# add_files ../rtl/imem.sv
+# add_files ../rtl/imm_gen.sv
+# add_files ../rtl/main_control.sv
+# add_files ../rtl/register_file.sv
+# add_files ../rtl/riscv_pipeline.sv
+# add_files [glob ../rtl/bus/*.sv]
+# add_files [glob ../rtl/dqn/*.sv]
+# add_files [glob ../rtl/dsp/*.v]
+no files matched glob pattern "../rtl/hexacore/*.sv"
+    while executing
+"glob ../rtl/hexacore/*.sv"
+    invoked from within
+"add_files [glob ../rtl/hexacore/*.sv]"
+    (file "create_axu4evb_project.tcl" line 30)
+INFO: [Common 17-206] Exiting Vivado at Fri Jul 10 08:37:18 2026...

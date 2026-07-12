@@ -3,12 +3,12 @@
 # SW Build 6140274 on Thu May 22 00:12:29 MDT 2025
 # IP Build 6138677 on Thu May 22 03:10:11 MDT 2025
 # SharedData Build 6139179 on Tue May 20 17:58:58 MDT 2025
-# Start of session at: Mon Apr 27 00:57:29 2026
-# Process ID         : 18856
-# Current directory  : C:/Users/DELL/Downloads/HexaCore-V2/PROJE/vivado
-# Command line       : vivado.exe -mode batch -source create_project.tcl
-# Log file           : C:/Users/DELL/Downloads/HexaCore-V2/PROJE/vivado/vivado.log
-# Journal file       : C:/Users/DELL/Downloads/HexaCore-V2/PROJE/vivado\vivado.jou
+# Start of session at: Fri Jul 10 08:39:45 2026
+# Process ID         : 1648
+# Current directory  : C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/vivado
+# Command line       : vivado.exe -mode batch -source create_axu4evb_project.tcl
+# Log file           : C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/vivado/vivado.log
+# Journal file       : C:/Users/DELL/Desktop/Yazilim/HexaCore-V2/PROJE/vivado\vivado.jou
 # Running On         : DESKTOP-3PR7CHN
 # Platform           : Windows Server 2016 or Windows 10
 # Operating System   : 26300
@@ -19,6 +19,6 @@
 # Host memory        : 16483 MB
 # Swap memory        : 16642 MB
 # Total Virtual      : 33126 MB
-# Available Virtual  : 9854 MB
+# Available Virtual  : 14833 MB
 #-----------------------------------------------------------
-source create_project.tcl
+source create_axu4evb_project.tcl

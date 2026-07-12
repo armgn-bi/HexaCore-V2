@@ -1,0 +1,17 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version      : Vivado v.2025.1 (win64) Build 6140274 Thu May 22 00:12:29 MDT 2025
+| Date              : Sun Jul 12 18:01:44 2026
+| Host              : DESKTOP-3PR7CHN running 64-bit major release  (build 9200)
+| Command           : report_bus_skew -warn_on_violation -file axu4evb_top_bus_skew_routed.rpt -pb axu4evb_top_bus_skew_routed.pb -rpx axu4evb_top_bus_skew_routed.rpx
+| Design            : axu4evb_top
+| Device            : xczu4ev-sfvc784
+| Speed File        : -1  PRODUCTION 1.30 05-15-2022
+| Design State      : Routed
+| Temperature Grade : I
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Bus Skew Report
+
+No bus skew constraints
+

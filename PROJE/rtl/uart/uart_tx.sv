@@ -41,6 +41,23 @@ module uart_tx #(
 
   assign tick16 = (baud_cnt == baud_div_i);
 
+  // Sample counter (0-15 for 16x oversampling)
+  logic [3:0] sample_cnt;
+  always_ff @(posedge clk_i or negedge rstn_i) begin
+    if (!rstn_i) begin
+      sample_cnt <= '0;
+    end else if (tx_en_i) begin
+      if (state == S_IDLE) begin
+        sample_cnt <= '0;
+      end else if (tick16) begin
+        sample_cnt <= sample_cnt + 1'b1;
+      end
+    end
+  end
+
+  logic tx_tick;
+  assign tx_tick = tick16 && (sample_cnt == 4'd15);
+
   // Bit counter (0-9: start, 8 data, stop)
   logic [3:0] bit_cnt;
   logic [7:0] tx_shift_reg;
@@ -75,17 +92,17 @@ module uart_tx #(
         end
       end
       S_START: begin
-        if (tick16) begin
+        if (tx_tick) begin
           next_state = S_DATA;
         end
       end
       S_DATA: begin
-        if (tick16 && bit_cnt == 4'd7) begin
+        if (tx_tick && bit_cnt == 4'd7) begin
           next_state = S_STOP;
         end
       end
       S_STOP: begin
-        if (tick16) begin
+        if (tx_tick) begin
           next_state = S_IDLE;
         end
       end
@@ -100,7 +117,7 @@ module uart_tx #(
     end else if (tx_en_i) begin
       if (state == S_IDLE) begin
         bit_cnt <= '0;
-      end else if (state == S_DATA && tick16) begin
+      end else if (state == S_DATA && tx_tick) begin
         bit_cnt <= bit_cnt + 1'b1;
       end
     end
@@ -113,7 +130,7 @@ module uart_tx #(
     end else if (tx_en_i) begin
       if (state == S_IDLE && tx_start_i) begin
         tx_shift_reg <= tx_data_i;
-      end else if (state == S_DATA && tick16) begin
+      end else if (state == S_DATA && tx_tick) begin
         tx_shift_reg <= {1'b0, tx_shift_reg[7:1]};
       end
     end

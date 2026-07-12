@@ -55,26 +55,23 @@ module soc_top
   output logic              dsp_m_tlast_o
 );
 
-  // ════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════
   // Varsayılan atamalar — henüz bağlanmamış portlar
-  // ════════════════════════════════════════════════
-  assign uart_tx_o      = 1'b1;     // idle-high
-  assign uart_irq_o     = 1'b0;
-  assign spi_sck_o      = 1'b0;
-  assign spi_mosi_o     = 1'b0;
-  assign spi_ss_o       = 4'b1111;  // tüm CS deassert
+  // ═══════════════════════════════════════════════════
+  // DSP AXI-Stream (opsiyonel — ileride bağlanacak)
   assign dsp_s_tready_o = 1'b0;
   assign dsp_m_tdata_o  = '0;
   assign dsp_m_tvalid_o = 1'b0;
   assign dsp_m_tlast_o  = 1'b0;
+  // Note: UART and SPI outputs are driven by their respective AXI peripherals, so no default assignment here.
 
   // I2C internal signals
   logic sda_oe, scl_oe;
   logic sda_i, scl_i;
 
-  // ════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════
   // AXI Master IF ↔ Interconnect arası sinyaller
-  // ════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════
   logic [AXI_ADDR_WIDTH-1:0]   mst_awaddr;
   logic [2:0]                  mst_awprot;
   logic                        mst_awvalid;
@@ -99,9 +96,9 @@ module soc_top
   logic                        mst_rvalid;
   logic                        mst_rready;
 
-  // ════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════
   // Interconnect ↔ Slave sinyalleri
-  // ════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════
   logic [AXI_ADDR_WIDTH-1:0]   slv_awaddr  [NUM_SLAVES];
   logic [2:0]                  slv_awprot  [NUM_SLAVES];
   logic                        slv_awvalid [NUM_SLAVES];
@@ -126,10 +123,10 @@ module soc_top
   logic                        slv_rvalid  [NUM_SLAVES];
   logic                        slv_rready  [NUM_SLAVES];
 
-  // ════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════
   // RISC-V Core Instance
   // (riscv_pipeline portlarını mevcut haliyle kullanıyoruz)
-  // ════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════
   riscv_pipeline #(
     .IMemInitFile (IMEM_INIT_FILE),
     .DMemInitFile (DMEM_INIT_FILE)
@@ -149,7 +146,7 @@ module soc_top
     .mem_read_o (mem_read_o)
   );
 
-  // ════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════
   // NOT: Mevcut riscv_pipeline DMEM'i dahili olarak kullanıyor.
   // AXI Master Bridge'e geçiş için pipeline'a yeni portlar eklemek
   // veya pipeline'ı wrapper ile sarmak gerekecek.
@@ -158,7 +155,7 @@ module soc_top
   // dahili olarak kullanmaya devam ediyor.
   // Aşağıdaki AXI Master IF örnek olarak bağlanmıştır;
   // pipeline modifiye edildiğinde aktif hale gelecektir.
-  // ════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════
 
   // Placeholder sinyaller — pipeline AXI portlarına sahip olduğunda bunlar bağlanacak
   logic             core_mem_read;
@@ -170,17 +167,18 @@ module soc_top
   logic [XLEN-1:0]  core_mem_rdata;
   logic             core_mem_ready;
 
-  // Şimdilik idle — pipeline dönüştürüldüğünde bağlanacak
-  assign core_mem_read     = 1'b0;
-  assign core_mem_write    = 1'b0;
+  // Şimdilik pipeline'ın debug portlarından alınan veriyi AXI'ye bağlıyoruz
+  // UART/Periferi yazmaları (store) için kullanılacak.
+  assign core_mem_read     = mem_read_o;
+  assign core_mem_write    = mem_wrt_o;
   assign core_mem_size     = 2'b10;
   assign core_mem_unsigned = 1'b0;
-  assign core_mem_addr     = '0;
-  assign core_mem_wdata    = '0;
+  assign core_mem_addr     = mem_addr_o;
+  assign core_mem_wdata    = mem_data_o;
 
-  // ════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════
   // AXI Master Interface
-  // ════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════
   axi_master_if u_axi_master (
     .clk_i            (clk_i),
     .rstn_i           (rstn_i),
@@ -217,9 +215,9 @@ module soc_top
     .m_axi_rready_o   (mst_rready)
   );
 
-  // ════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════
   // AXI Interconnect
-  // ════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════
   axi_interconnect u_interconnect (
     .clk_i         (clk_i),
     .rstn_i        (rstn_i),
@@ -267,9 +265,9 @@ module soc_top
     .s_rready_o    (slv_rready)
   );
 
-  // ════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════
   // Slave 0: DMEM (AXI Wrapper)
-  // ════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════
   axi_dmem_slave #(
     .DMEM_INIT_FILE (DMEM_INIT_FILE),
     .DMEM_BASE      (32'h8001_0000),
@@ -301,10 +299,10 @@ module soc_top
     .dbg_addr_i       (dbg_addr_i),
     .dbg_data_o       ()  // debug için ayrı kullanılabilir
   );
-  // ════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════
   // Slave 4: DSP FIR Filtre (AXI4-Lite Wrapper)
   // Adres: 0x4000_1000 – 0x4000_1FFF (4 KB)
-  // ════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════
   dsp_filter_wrapper u_dsp_filter (
     .clk_i            (clk_i),
     .rstn_i           (rstn_i),
@@ -330,10 +328,10 @@ module soc_top
     .s_axi_rready_i   (slv_rready  [SLV_DSP])
   );
 
-  // ════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════
   // Slave 1: UART (AXI4-Lite Wrapper)
   // Adres: 0x4000_0000 – 0x4000_00FF (256 B)
-  // ════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════
   axi_uart u_axi_uart (
     .clk_i            (clk_i),
     .rstn_i           (rstn_i),
@@ -363,10 +361,10 @@ module soc_top
     .uart_irq_o       (uart_irq_o)
   );
 
-  // ════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════
   // Slave 2: SPI Master (AXI4-Lite Wrapper)
   // Adres: 0x4000_0100 – 0x4000_01FF (256 B)
-  // ════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════
   axi_spi u_axi_spi (
     .clk_i            (clk_i),
     .rstn_i           (rstn_i),
@@ -397,10 +395,10 @@ module soc_top
     .cs_o             (spi_ss_o)
   );
 
-  // ════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════
   // Slave 3: I2C Master (AXI4-Lite Wrapper)
   // Adres: 0x4000_0200 – 0x4000_02FF (256 B)
-  // ════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════
   axi_i2c u_axi_i2c (
     .clk_i            (clk_i),
     .rstn_i           (rstn_i),
@@ -437,11 +435,11 @@ module soc_top
   assign sda_i = i2c_sda_io;
   assign scl_i = i2c_scl_io;
 
-  // ════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════
   // Slave 5: DQN Inference Accelerator (AXI4-Lite Wrapper)
   // Adres: 0x4000_2000 – 0x4000_2FFF (4 KB)
   // Kucuk DQN: 4->16->4, Q1.15, sadece inference
-  // ════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════
   dqn_accelerator u_dqn_accel (
     .clk_i            (clk_i),
     .rstn_i           (rstn_i),
@@ -459,12 +457,13 @@ module soc_top
     .s_axi_bready_i   (slv_bready  [SLV_DQN]),
     .s_axi_araddr_i   (slv_araddr  [SLV_DQN]),
     .s_axi_arprot_i   (slv_arprot  [SLV_DQN]),
-    .s_axi_arvalid_i  (slv_arvalid [SLV_DQN]),
-    .s_axi_arready_o  (slv_arready [SLV_DQN]),
+    .s_axi_arvalid_i  (slv_arvalid  [SLV_DQN]),
+    .s_axi_arready_o  (slv_arready  [SLV_DQN]),
     .s_axi_rdata_o    (slv_rdata   [SLV_DQN]),
     .s_axi_rresp_o    (slv_rresp   [SLV_DQN]),
     .s_axi_rvalid_o   (slv_rvalid  [SLV_DQN]),
     .s_axi_rready_i   (slv_rready  [SLV_DQN])
   );
 
-endmodule
+endmodule// Force Synthesis 4
+// Force Synthesis 5 - Enable UART
